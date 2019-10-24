@@ -97,24 +97,6 @@
 (defvar define-it--wiki-summary-content "" "Wiki summary content string.")
 
 
-(defun define-it--wrap-string (str len)
-  "Wrap the STR under the LEN."
-  (let ((res-str "") (min 0) (new-len len) (added-nl-count 0))
-    (while (and (< min new-len)
-                (< new-len (length str)))
-      (let* ((line (substring str min new-len))
-             (spc-lst (split-string line " "))
-             (last-elm (nth (1- (length spc-lst)) spc-lst)))
-        (setq res-str
-              (concat res-str
-                      (substring line 0 (- len (length last-elm)))
-                      "\n"))
-        (setq added-nl-count (1+ added-nl-count))
-        (setq min (- (length res-str) added-nl-count))
-        (setq new-len (+ min len))))
-    (setq res-str (concat res-str (substring str min (length str))))
-    res-str))
-
 (defun define-it--get-dictionary-definition-as-string (search-str)
   "Return the dictionary definition as a string with SEARCH-STR."
   (setq define-it--dictionary-it nil)
