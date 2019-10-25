@@ -52,16 +52,22 @@
   :group 'tool
   :link '(url-link :tag "Repository" "https://github.com/jcs090218/define-it"))
 
-(defcustom define-it-delimiter-string "\n=>------\n"
-  "String that display for delimiter."
-  :type 'string
-  :group 'define-it)
-
 (defface define-it-pop-tip-color
   '((t (:foreground "#000000" :background "#FFF08A")))
   "Pop tip color, for graphic mode only."
   :group 'define-it)
 (defvar define-it-pop-tip-color 'define-it-pop-tip-color)
+
+(defcustom define-it-output-choice 'pop
+  "Option to show output."
+  :type '(choice (const :tag "pop" pop)
+                 (const :tag "view" view))
+  :group 'define-it)
+
+(defcustom define-it-delimiter-string "\n=>------\n"
+  "String that display for delimiter."
+  :type 'string
+  :group 'define-it)
 
 (defcustom define-it-show-dictionary-definition t
   "Option to show dictionary definition."
@@ -87,6 +93,8 @@
   "Timer for defining.")
 (defvar define-it--update-time 0.1
   "Run every this seconds until all information is received.")
+
+(defvar define-it--current-word "" "Record the search word.")
 
 (defvar define-it--dictionary-it nil "Flag to check if dictionary search done.")
 (defvar define-it--google-translated nil "Flag to check if google translated done.")
@@ -144,18 +152,30 @@
           define-it--google-translated-content
           define-it--wiki-summary-content))
 
-(cl-defun define-it--pop-tooltip (string &key point (timeout 300))
-  "Pop up an tooltip depends on the graphic used.
-
-STRING is the content of the toolip. The location POINT. TIMEOUT for not
-forever delay."
+(cl-defun define-it--in-pop (content &key point (timeout 300))
+  "Define in the pop with CONTENT.
+The location POINT. TIMEOUT for not forever delay."
   (if (display-graphic-p)
       (progn
         (pos-tip-show
-         (pos-tip-fill-string string (* (frame-width) define-it-pop-tip-width-percentage))
+         (pos-tip-fill-string content (* (frame-width) define-it-pop-tip-width-percentage))
          define-it-pop-tip-color point nil timeout)
         (define-it--kill-timer))
-    (popup-tip string :point point :around t :scroll-bar t :margin t)))
+    (popup-tip content :point point :around t :scroll-bar t :margin t)))
+
+(defun define-it--in-buffer (content)
+  "Define in the buffer with CONTENT."
+  (let* ((name (format "*define-it:%s*" define-it--current-word))
+         (buf (if (get-buffer name) (get-buffer name) (generate-new-buffer name))))
+    (with-current-buffer buf
+      (view-mode -1)
+      (delete-region (point-min) (point-max))  ; Remove all content.
+      (insert content) (insert "\n")
+      (goto-char (point-min))
+      (text-mode)
+      (view-mode 1)
+      (visual-line-mode 1))
+    (pop-to-buffer buf)))
 
 (defun define-it--received-info-p ()
   "Check if received all informations."
@@ -171,7 +191,11 @@ forever delay."
 (defun define-it--display-info ()
   "Display the info after receving all necessary information."
   (if (define-it--received-info-p)
-      (define-it--pop-tooltip (define-it--get-definition) :point (point))
+      (cl-case define-it-output-choice
+        ('pop
+         (define-it--in-pop (define-it--get-definition) :point (point)))
+        (t
+         (define-it--in-buffer (define-it--get-definition))))
     (define-it--reset-timer)))
 
 (defun define-it--kill-timer ()
@@ -191,6 +215,7 @@ forever delay."
   "Define by inputing WORD."
   (interactive "MWord: \ni\nP")
   (unless word (user-error "[WARNINGS] Invalid search string: %s" word))
+  (setq define-it--current-word word)
   (progn  ; Call all events for receving all info.
     (define-it--get-dictionary-definition-as-string word)
     (define-it--get-google-translate-as-string word)
