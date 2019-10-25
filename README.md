@@ -6,7 +6,8 @@
 > Define the word
 
 
-**P.S. Inspired by [Amazon Kindle](https://en.wikipedia.org/wiki/Amazon_Kindle)'s reading experiences.**
+
+*P.S. Inspired by [Amazon Kindle](https://en.wikipedia.org/wiki/Amazon_Kindle)'s reading experiences.*
 
 
 ## Dependencies
