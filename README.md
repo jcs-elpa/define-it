@@ -3,7 +3,7 @@
 
 
 # define-it
-> Define the word
+> Define the word.
 
 <p align="center">
 
