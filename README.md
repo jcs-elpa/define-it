@@ -3,7 +3,7 @@
 
 
 # define-it
-> Define the word.
+> Define, translate, wiki the word.
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 **Table of Contents**
@@ -19,10 +19,6 @@
     - [Contribution](#contribution)
 
 <!-- markdown-toc end -->
-
-<p align="center">
-  <img src="./screenshot/demo.gif"/>
-</p>
 
 *P.S. Inspired by [Amazon Kindle](https://en.wikipedia.org/wiki/Amazon_Kindle)'s reading experiences.*
 
