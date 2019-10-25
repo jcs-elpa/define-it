@@ -139,17 +139,17 @@
            (forward-line 1)
            (define-it--delete-line 3))
          (progn  ; Removed useless footer.
-           (goto-char (point-max))
-           (forward-line -2)
-           (define-it--delete-line 2)
-           (goto-char (point-max))
-           (backward-delete-char 1))
+           (goto-char (point-min))
+           (while (ignore-errors (search-forward "Copyright"))
+             (beginning-of-line)
+             (define-it--delete-line 1)))
          (progn  ; Removed embedded scripts. (For AdBlock)
            (goto-char (point-min))
            (while (ignore-errors (search-forward "googletag.cmd"))
              ;; Code is always 12 line embedded.
              (define-it--delete-line 12))))
-       (buffer-string)))  ; Return it.
+       ;; Cleaned last trailing empty lines with `string-trim'.
+       (string-trim (buffer-string))))  ; Return it.
     content))
 
 (defun define-it--get-dictionary-definition-as-string (search-str)
