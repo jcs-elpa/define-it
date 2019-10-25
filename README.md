@@ -20,18 +20,31 @@
 
 ## Usage
 
+### About Showing/Displaying
+
 You can customize these variables below for controlling the displayed on the menu.
 
 * `define-it-show-dictionary-definition`
 * `define-it-show-google-translate`
 * `define-it-show-wiki-summary`
 
+### About Output
+
+There are two way of outputing the menu. `pop` will output it in tooltip. `view`
+will output it in the another buffer.
+
+```el
+(setq define-it-output-choice 'view)  ; Output with buffer.
+(setq define-it-output-choice 'pop)   ; Output with tooltip.
+```
+
+### About Delimiter
+
 You can customize `define-it-delimiter-string` variable for changing
 the delimiter look like.
 
 ```el
-String that separates each information section.
-(setq define-it-delimiter-string "\n=>------\n")
+(setq define-it-delimiter-string "\n=>------\n")  ; String that separates each information section.
 ```
 
 ### About Google Translate
@@ -40,10 +53,8 @@ If you wouldn't want to select the `source` and `destination` every time,
 you should consider set these variables below like this.
 
 ```el
-;; Auto detect language.
-(setq google-translate-default-source-language "auto")
-;; Set your target language.
-(setq google-translate-default-target-language "en")
+(setq google-translate-default-source-language "auto")  ; Auto detect language.
+(setq google-translate-default-target-language "en")    ; Set your target language.
 ```
 
 
