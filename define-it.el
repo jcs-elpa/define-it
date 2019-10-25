@@ -106,12 +106,12 @@
 (defun define-it--get-google-translate-as-string (search-str)
   "Return the google translate as a string with SEARCH-STR."
   (setq define-it--google-translated nil)
-  (setq define-it--google-translated-content "Translated")
   (let* ((langs (google-translate-read-args nil nil))
          (source-language (car langs))
-         (target-language (cadr langs)))
-    (google-translate-translate source-language target-language search-str)
-    )
+         (target-language (cadr langs))
+         (kill-ring kill-ring))  ; Preserved `kill-ring'.
+    (google-translate-translate source-language target-language search-str 'kill-ring)
+    (setq define-it--google-translated-content (nth 0 kill-ring)))
   (setq define-it--google-translated t))
 
 (defun define-it--get-wiki-summary-as-string (search-str)
