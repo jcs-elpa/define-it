@@ -60,8 +60,8 @@
 
 (defcustom define-it-output-choice 'pop
   "Option to show output."
-  :type '(choice (const :tag "pop" pop)
-                 (const :tag "view" view))
+  :type '(choice (const :tag "view" view)
+                 (const :tag "pop" pop))
   :group 'define-it)
 
 (defcustom define-it-delimiter-string "\n=>------\n"
