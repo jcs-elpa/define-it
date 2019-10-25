@@ -2,6 +2,9 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 
+# define-it
+> Define the word.
+
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 **Table of Contents**
 
@@ -17,13 +20,8 @@
 
 <!-- markdown-toc end -->
 
-
-# define-it
-> Define the word.
-
-
 <p align="center">
-
+  <img src="./screenshot/demo.gif"/>
 </p>
 
 *P.S. Inspired by [Amazon Kindle](https://en.wikipedia.org/wiki/Amazon_Kindle)'s reading experiences.*
