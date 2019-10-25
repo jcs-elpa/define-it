@@ -170,7 +170,7 @@
    :error
    ;; NOTE: Accept, error.
    (cl-function
-    (lambda (&rest args &key error-thrown &allow-other-keys)
+    (lambda (&rest args &key _error-thrown &allow-other-keys)
       (setq define-it--dictionary-it t)))))
 
 (defun define-it--get-google-translate-as-string (search-str)
