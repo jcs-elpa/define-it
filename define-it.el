@@ -7,7 +7,7 @@
 ;; Description: Define the word.
 ;; Keyword: dictionary explanation search wiki
 ;; Version: 0.0.1
-;; Package-Requires: ((emacs "24.3") (s "1.12.0") (request "0.3.0") (google-translate "0.11.18") (popup "0.5.3") (pos-tip "0.4.6") (wiki-summary "0.1"))
+;; Package-Requires: ((emacs "25.1") (s "1.12.0") (request "0.3.0") (google-translate "0.11.18") (popup "0.5.3") (pos-tip "0.4.6") (wiki-summary "0.1"))
 ;; URL: https://github.com/jcs090218/define-it
 
 ;; This file is NOT part of GNU Emacs.
@@ -33,6 +33,7 @@
 ;;; Code:
 
 (require 's)
+(require 'dom)
 
 (require 'request)
 (require 'pos-tip)
@@ -89,6 +90,7 @@
   :type 'number
   :group 'define-it)
 
+
 (defvar define-it--define-timer nil
   "Timer for defining.")
 (defvar define-it--update-time 0.1
@@ -104,12 +106,72 @@
 (defvar define-it--google-translated-content "" "Google translate content string.")
 (defvar define-it--wiki-summary-content "" "Wiki summary content string.")
 
+(defvar define-it--get-def-index 0 "Record index for getting definition order.")
+
+
+(defun define-it--delete-line (n)
+  "Delete N line from current point."
+  (let ((index 0))
+    (while (< index n)
+      (setq index (1+ index))
+      (delete-region (line-beginning-position)
+                     (if (< (point-max) (1+ (line-end-position)))
+                         (point-max)
+                       (1+ (line-end-position)))))))
+
+(defun define-it--parse-dictionary (data)
+  "Parse dictionary HTML from DATA."
+  (let ((content "") (dom nil) (text "")
+        (id-key (s-replace " " "-" (format "%s__1" define-it--current-word))))
+    (setq
+     content
+     (with-temp-buffer
+       (insert data)
+       (setq dom (libxml-parse-html-region (point-min) (point-max) nil t))
+       (delete-region (point-min) (point-max))  ; Remove all content.
+       (setq text (dom-texts (dom-by-id dom id-key)))
+       (setq text (s-replace-regexp "\\(^\\s-*$\\)\n" "\n" text))
+       (insert text)
+       (progn  ; Start tweeking buffer.
+         (progn  ; Removed useless header.
+           (goto-char (point-min))
+           (define-it--delete-line 3)
+           (forward-line 1)
+           (define-it--delete-line 3))
+         (progn  ; Removed useless footer.
+           (goto-char (point-max))
+           (forward-line -2)
+           (define-it--delete-line 2)
+           (goto-char (point-max))
+           (backward-delete-char 1))
+         (progn  ; Removed embedded scripts. (For AdBlock)
+           (goto-char (point-min))
+           (while (ignore-errors (search-forward "googletag.cmd"))
+             ;; Code is always 12 line embedded.
+             (define-it--delete-line 12))))
+       (buffer-string)))  ; Return it.
+    content))
 
 (defun define-it--get-dictionary-definition-as-string (search-str)
   "Return the dictionary definition as a string with SEARCH-STR."
   (setq define-it--dictionary-it nil)
-  (setq define-it--dictionary-content "Definition")
-  (setq define-it--dictionary-it t))
+  (request
+   (format "https://www.collinsdictionary.com/dictionary/english/%s" search-str)
+   :type "GET"
+   :parser 'buffer-string
+   :success
+   (cl-function
+    (lambda (&key data &allow-other-keys)
+      (setq define-it--dictionary-it t)
+      (setq define-it--dictionary-content
+            (if (string-match-p "Sorry, no results" data)
+                "No definition found"
+              (define-it--parse-dictionary data)))))
+   :error
+   ;; NOTE: Accept, error.
+   (cl-function
+    (lambda (&rest args &key error-thrown &allow-other-keys)
+      (setq define-it--dictionary-it t)))))
 
 (defun define-it--get-google-translate-as-string (search-str)
   "Return the google translate as a string with SEARCH-STR."
@@ -119,6 +181,7 @@
          (target-language (cadr langs))
          (kill-ring kill-ring))  ; Preserved `kill-ring'.
     (google-translate-translate source-language target-language search-str 'kill-ring)
+    (message "")  ; Clear the annoying minibuffer display.
     (setq define-it--google-translated-content (nth 0 kill-ring)))
   (setq define-it--google-translated t))
 
@@ -136,21 +199,47 @@
        (setq define-it--wiki-summary-content (if summary summary "No article found")))
      (setq define-it--wiki-summarized t))))
 
+(defun define-it--show-count ()
+  "Check how many services is showing."
+  (let ((counter 0))
+    (when define-it-show-dictionary-definition (setq counter (1+ counter)))
+    (when define-it-show-google-translate (setq counter (1+ counter)))
+    (when define-it-show-wiki-summary (setq counter (1+ counter)))
+    counter))
+
 (defun define-it--form-info-format ()
   "Form the info format."
-  (concat
-   (when define-it-show-dictionary-definition
-     (concat "%s" define-it-delimiter-string))
-   (when define-it-show-google-translate
-     (concat "%s" define-it-delimiter-string))
-   (when define-it-show-wiki-summary "%s")))
+  (let ((index 0) (count (define-it--show-count))
+        (output ""))
+    (while (< index count)
+      (setq output (concat output "%s" (if (= index (1- count)) "" define-it-delimiter-string)))
+      (setq index (1+ index)))
+    output))
+
+(defun define-it--return-info-by-start-index (index)
+  "Return the info pointer by start INDEX."
+  (let ((info-ptr "") (start index))
+    (setq
+     info-ptr
+     (cl-case start
+       (0 (if define-it-show-dictionary-definition define-it--dictionary-content nil))
+       (1 (if define-it-show-google-translate define-it--google-translated-content nil))
+       (2 (if define-it-show-wiki-summary define-it--wiki-summary-content nil))
+       (t "")))  ; Finally returned something to prevent error/infinite loop.
+    (if info-ptr
+        (setq define-it--get-def-index (1+ start))  ; Add one, ready for next use.
+      (setq start (1+ start))
+      (setq info-ptr (define-it--return-info-by-start-index start)))
+    info-ptr))
 
 (defun define-it--get-definition ()
   "Use all services/resources to get the definition string."
-  (format (define-it--form-info-format)
-          define-it--dictionary-content
-          define-it--google-translated-content
-          define-it--wiki-summary-content))
+  (let ((define-it--get-def-index 0))
+    (format
+     (define-it--form-info-format)
+     (define-it--return-info-by-start-index define-it--get-def-index)
+     (define-it--return-info-by-start-index define-it--get-def-index)
+     (define-it--return-info-by-start-index define-it--get-def-index))))
 
 (cl-defun define-it--in-pop (content &key point (timeout 300))
   "Define in the pop with CONTENT.
@@ -210,16 +299,24 @@ The location POINT. TIMEOUT for not forever delay."
   (setq define-it--define-timer
         (run-with-timer define-it--update-time nil 'define-it--display-info)))
 
+(defun define-it--register-events (word)
+  "Call all events for receving all info depends WORD."
+  (when define-it-show-dictionary-definition
+    (define-it--get-dictionary-definition-as-string word))
+  (when define-it-show-google-translate
+    (define-it--get-google-translate-as-string word))
+  (when define-it-show-wiki-summary
+    (define-it--get-wiki-summary-as-string word)))
+
 ;;;###autoload
 (defun define-it (word)
   "Define by inputing WORD."
   (interactive "MWord: \ni\nP")
   (unless word (user-error "[WARNINGS] Invalid search string: %s" word))
+  (let ((show-count (define-it--show-count)))
+    (when (= 0 show-count) (user-error "[CONFIG] Nothing to show: %s" show-count)))
   (setq define-it--current-word word)
-  (progn  ; Call all events for receving all info.
-    (define-it--get-dictionary-definition-as-string word)
-    (define-it--get-google-translate-as-string word)
-    (define-it--get-wiki-summary-as-string word))
+  (define-it--register-events word)
   (define-it--reset-timer))
 
 ;;;###autoload
