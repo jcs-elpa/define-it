@@ -12,8 +12,8 @@
 
 ## Dependencies
 
-* (google-translate)[https://github.com/atykhonov/google-translate]
-* (wiki-summary)[https://github.com/jozefg/wiki-summary.el]
+* [google-translate](https://github.com/atykhonov/google-translate)
+* [wiki-summary](https://github.com/jozefg/wiki-summary.el)
 
 
 ## Contribution
