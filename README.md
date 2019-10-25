@@ -2,8 +2,25 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
+**Table of Contents**
+
+- [define-it](#define-it)
+    - [Dependencies](#dependencies)
+    - [Services](#services)
+    - [Usage](#usage)
+        - [About Showing/Displaying](#about-showingdisplaying)
+        - [About Output](#about-output)
+        - [About Delimiter](#about-delimiter)
+        - [About Google Translate](#about-google-translate)
+    - [Contribution](#contribution)
+
+<!-- markdown-toc end -->
+
+
 # define-it
 > Define the word.
+
 
 <p align="center">
 
@@ -16,6 +33,13 @@
 
 * [google-translate](https://github.com/atykhonov/google-translate)
 * [wiki-summary](https://github.com/jozefg/wiki-summary.el)
+
+
+## Services
+
+* [Collins Dictionary](https://www.collinsdictionary.com/)
+* [Google Translate](https://translate.google.com/)
+* [Wikipedia](https://www.wikipedia.org/)
 
 
 ## Usage
