@@ -7,7 +7,7 @@
 ;; Description: Define the word.
 ;; Keyword: dictionary explanation search wiki
 ;; Version: 0.0.1
-;; Package-Requires: ((emacs "25.1") (s "1.12.0") (request "0.3.0") (google-translate "0.11.18") (popup "0.5.3") (pos-tip "0.4.6") (wiki-summary "0.1"))
+;; Package-Requires: ((emacs "25.1") (cl-lib "0.6") (s "1.12.0") (request "0.3.0") (popup "0.5.3") (pos-tip "0.4.6") (google-translate "0.11.18") (wiki-summary "0.1"))
 ;; URL: https://github.com/jcs090218/define-it
 
 ;; This file is NOT part of GNU Emacs.
@@ -32,8 +32,9 @@
 
 ;;; Code:
 
-(require 's)
+(require 'cl-lib)
 (require 'dom)
+(require 's)
 
 (require 'request)
 (require 'pos-tip)
@@ -83,11 +84,6 @@
 (defcustom define-it-show-wiki-summary t
   "Option to show wiki summary."
   :type 'boolean
-  :group 'define-it)
-
-(defcustom define-it-pop-tip-width-percentage 0.4
-  "Pop tip width in percentage, default is 0.4."
-  :type 'number
   :group 'define-it)
 
 
@@ -246,11 +242,12 @@
 (defun define-it--get-definition ()
   "Use all services/resources to get the definition string."
   (let ((define-it--get-def-index 0))
-    (format
-     (define-it--form-info-format)
-     (define-it--return-info-by-start-index define-it--get-def-index)
-     (define-it--return-info-by-start-index define-it--get-def-index)
-     (define-it--return-info-by-start-index define-it--get-def-index))))
+    (string-trim
+     (format
+      (define-it--form-info-format)
+      (define-it--return-info-by-start-index define-it--get-def-index)
+      (define-it--return-info-by-start-index define-it--get-def-index)
+      (define-it--return-info-by-start-index define-it--get-def-index)))))
 
 (cl-defun define-it--in-pop (content &key point (timeout 300))
   "Define in the pop with CONTENT.
@@ -258,7 +255,7 @@ The location POINT. TIMEOUT for not forever delay."
   (if (display-graphic-p)
       (progn
         (pos-tip-show
-         (pos-tip-fill-string content (* (frame-width) define-it-pop-tip-width-percentage))
+         (pos-tip-fill-string content (frame-width))
          define-it-pop-tip-color point nil timeout)
         (define-it--kill-timer))
     (popup-tip content :point point :around t :scroll-bar t :margin t)))
@@ -291,11 +288,10 @@ The location POINT. TIMEOUT for not forever delay."
 (defun define-it--display-info ()
   "Display the info after receving all necessary information."
   (if (define-it--received-info-p)
-      (cl-case define-it-output-choice
-        ('pop
-         (define-it--in-pop (define-it--get-definition) :point (point)))
-        (t
-         (define-it--in-buffer (define-it--get-definition))))
+      (let* ((content (define-it--get-definition)))
+        (cl-case define-it-output-choice
+          ('pop (define-it--in-pop content :point (point)))
+          (t (define-it--in-buffer content))))
     (define-it--reset-timer)))
 
 (defun define-it--kill-timer ()
