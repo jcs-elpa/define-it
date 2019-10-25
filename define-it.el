@@ -119,6 +119,14 @@
                          (point-max)
                        (1+ (line-end-position)))))))
 
+(defun define-it--strip-string-from-buffer (str)
+  "Strip the STR from current buffer."
+  (goto-char (point-min))
+  (let ((len (length str)))
+    (while (ignore-errors (search-forward str))
+      (backward-char len)
+      (delete-region (point) (1+ (line-end-position))))))
+
 (defun define-it--parse-dictionary (data)
   "Parse dictionary HTML from DATA."
   (let ((content "") (dom nil) (text "")
@@ -147,7 +155,10 @@
            (goto-char (point-min))
            (while (ignore-errors (search-forward "googletag.cmd"))
              ;; Code is always 12 line embedded.
-             (define-it--delete-line 12))))
+             (define-it--delete-line 12)))
+         (progn
+           (define-it--strip-string-from-buffer "    More Synonyms of")
+           (define-it--strip-string-from-buffer "More Synonyms of")))
        ;; Cleaned last trailing empty lines with `string-trim'.
        (string-trim (buffer-string))))  ; Return it.
     content))
