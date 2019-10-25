@@ -6,6 +6,15 @@
 > Define the word
 
 
+**P.S. Inspired by [Amazon Kindle](https://en.wikipedia.org/wiki/Amazon_Kindle)'s reading experiences.**
+
+
+## Dependencies
+
+* (google-translate)[https://github.com/atykhonov/google-translate]
+* (wiki-summary)[https://github.com/jozefg/wiki-summary.el]
+
+
 ## Contribution
 
 If you would like to contribute to this project, you may either
