@@ -123,30 +123,31 @@
       (backward-char len)
       (delete-region (point) (1+ (line-end-position))))))
 
+(defun define-it--strip-string-from-buffer-with-line (str)
+  "Strip the STR from current buffer with line."
+  (goto-char (point-min))
+  (while (ignore-errors (search-forward str))
+    (beginning-of-line)
+    (define-it--delete-line 1)))
+
 (defun define-it--parse-dictionary (data)
   "Parse dictionary HTML from DATA."
-  (let ((content "") (dom nil) (text "")
-        (id-key (s-replace " " "-" (format "%s__1" define-it--current-word))))
+  (let ((content "") (dom nil) (text ""))
     (setq
      content
      (with-temp-buffer
        (insert data)
        (setq dom (libxml-parse-html-region (point-min) (point-max) nil t))
        (delete-region (point-min) (point-max))  ; Remove all content.
-       (setq text (dom-texts (dom-by-id dom id-key)))
+       (setq text (dom-texts (dom-by-class dom "dictentry")))
        (setq text (s-replace-regexp "\\(^\\s-*$\\)\n" "\n" text))
        (insert text)
        (progn  ; Start tweeking buffer.
          (progn  ; Removed useless header.
-           (goto-char (point-min))
-           (define-it--delete-line 3)
-           (forward-line 1)
-           (define-it--delete-line 3))
-         (progn  ; Removed useless footer.
-           (goto-char (point-min))
-           (while (ignore-errors (search-forward "Copyright"))
-             (beginning-of-line)
-             (define-it--delete-line 1)))
+           (define-it--strip-string-from-buffer-with-line "Word Frequency"))
+         (progn  ; Removed Copyright.
+           (define-it--strip-string-from-buffer-with-line "Copyright")
+           (define-it--strip-string-from-buffer-with-line "All rights reserved"))
          (progn  ; Removed embedded scripts. (For AdBlock)
            (goto-char (point-min))
            (while (ignore-errors (search-forward "googletag.cmd"))
@@ -156,7 +157,9 @@
            (define-it--strip-string-from-buffer "    More Synonyms of")
            (define-it--strip-string-from-buffer "More Synonyms of")))
        ;; Cleaned last trailing empty lines with `string-trim'.
-       (string-trim (buffer-string))))  ; Return it.
+       (s-replace-regexp
+        "\\(^\\s-*$\\)\n" "\n"
+        (string-trim (buffer-string)))))  ; Return it.
     content))
 
 (defun define-it--get-dictionary-definition-as-string (search-str)
