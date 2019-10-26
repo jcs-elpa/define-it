@@ -38,6 +38,14 @@
 
 ## Usage
 
+These are the function calls available.
+
+* `define-it`
+* `define-it-at-point`
+
+
+## Customization
+
 ### About Showing/Displaying
 
 You can customize these variables below for controlling the displayed on the menu.
