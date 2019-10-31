@@ -35,6 +35,7 @@
 (require 'cl-lib)
 (require 'dom)
 (require 's)
+(require 'subr-x)
 
 (require 'request)
 (require 'pos-tip)
