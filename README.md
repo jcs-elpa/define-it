@@ -66,12 +66,18 @@ will output it in the another buffer.
 
 ### About Delimiter
 
-You can customize `define-it-delimiter-string` variable for changing
-the delimiter look like.
+There are two type of delimiter string that you can customize.
+
+* `define-it-delimiter-header`  [FOR HEADER]
+* `define-it-delimiter-info`    [FOR OTHERS]
+
+If you don't want the header to be displayed toggle `define-it-show-header`
+variable.
 
 ```el
-(setq define-it-delimiter-string "\n=>------\n")  ; String that separates each information section.
+(setq define-it-show-header t)  ; Default is shown
 ```
+
 
 ### About Google Translate
 
