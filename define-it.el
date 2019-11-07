@@ -6,7 +6,7 @@
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; Description: Define the word.
 ;; Keyword: dictionary explanation search wiki
-;; Version: 0.0.1
+;; Version: 0.0.4
 ;; Package-Requires: ((emacs "25.1") (cl-lib "0.6") (s "1.12.0") (request "0.3.0") (popup "0.5.3") (pos-tip "0.4.6") (google-translate "0.11.18") (wiki-summary "0.1"))
 ;; URL: https://github.com/jcs090218/define-it
 
@@ -67,8 +67,18 @@
                  (const :tag "pop" pop))
   :group 'define-it)
 
-(defcustom define-it-delimiter-string "\n=>------\n"
-  "String that display for delimiter."
+(defcustom define-it-show-header t
+  "To display defining word on the top."
+  :type 'boolean
+  :group 'define-it)
+
+(defcustom define-it-delimiter-header "\n=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>\n"
+  "String that display for header delimiter."
+  :type 'string
+  :group 'define-it)
+
+(defcustom define-it-delimiter-info "\n=>=================================\n"
+  "String that display for information delimiter."
   :type 'string
   :group 'define-it)
 
@@ -144,8 +154,10 @@
        (setq text (s-replace-regexp "\\(^\\s-*$\\)\n" "\n" text))
        (insert text)
        (progn  ; Start tweeking buffer.
-         (progn  ; Removed useless header.
-           (define-it--strip-string-from-buffer-with-line "Word Frequency"))
+         (progn  ; Removed useless header section.
+           (goto-char (point-min))
+           (search-forward ")")
+           (delete-region (point-min) (point)))
          (progn  ; Removed Copyright.
            (define-it--strip-string-from-buffer-with-line "Copyright")
            (define-it--strip-string-from-buffer-with-line "All rights reserved"))
@@ -218,12 +230,18 @@
     (when define-it-show-wiki-summary (setq counter (1+ counter)))
     counter))
 
+(defun define-it--form-title-format ()
+  "Form the title format."
+  (if define-it-show-header
+      (format "[DEFINE]: %s%s" define-it--current-word define-it-delimiter-header)
+    ""))
+
 (defun define-it--form-info-format ()
   "Form the info format."
   (let ((index 0) (count (define-it--show-count))
         (output ""))
     (while (< index count)
-      (setq output (concat output "%s" (if (= index (1- count)) "" define-it-delimiter-string)))
+      (setq output (concat output "%s" (if (= index (1- count)) "" define-it-delimiter-info)))
       (setq index (1+ index)))
     output))
 
@@ -248,7 +266,7 @@
   (let ((define-it--get-def-index 0))
     (string-trim
      (format
-      (define-it--form-info-format)
+      (concat (define-it--form-title-format) (define-it--form-info-format))
       (define-it--return-info-by-start-index define-it--get-def-index)
       (define-it--return-info-by-start-index define-it--get-def-index)
       (define-it--return-info-by-start-index define-it--get-def-index)))))
