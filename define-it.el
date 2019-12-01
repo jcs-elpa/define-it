@@ -1,4 +1,4 @@
-;;; define-it.el --- Define, translate, wiki the word.  -*- lexical-binding: t; -*-
+;;; define-it.el --- Define, translate, wiki the word  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019  Shen, Jen-Chieh
 ;; Created date 2019-10-24 11:18:00
