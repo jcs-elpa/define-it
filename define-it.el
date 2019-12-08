@@ -340,8 +340,8 @@ The location POINT. TIMEOUT for not forever delay."
 ;;;###autoload
 (defun define-it (word)
   "Define by inputing WORD."
-  (interactive "MWord: \ni\nP")
-  (unless word (user-error "[WARNINGS] Invalid search string: %s" word))
+  (interactive "MWord: ")
+  (when (string-empty-p word) (user-error "[WARNINGS] Invalid search string: %s" word))
   (let ((show-count (define-it--show-count)))
     (when (= 0 show-count) (user-error "[CONFIG] Nothing to show: %s" show-count)))
   (setq define-it--current-word word)
