@@ -97,6 +97,11 @@
   :type 'boolean
   :group 'define-it)
 
+(defcustom define-it-timeout 300
+  "Time to hide tooltip after these seconds."
+  :type 'integer
+  :group 'define-its)
+
 
 (defvar define-it--define-timer nil
   "Timer for defining.")
@@ -271,14 +276,14 @@
       (define-it--return-info-by-start-index define-it--get-def-index)
       (define-it--return-info-by-start-index define-it--get-def-index)))))
 
-(cl-defun define-it--in-pop (content &key point (timeout 300))
+(cl-defun define-it--in-pop (content &key point)
   "Define in the pop with CONTENT.
 The location POINT. TIMEOUT for not forever delay."
   (if (display-graphic-p)
       (progn
         (pos-tip-show
          (pos-tip-fill-string content (frame-width))
-         define-it-pop-tip-color point nil timeout)
+         define-it-pop-tip-color point nil define-it-timeout)
         (define-it--kill-timer))
     (popup-tip content :point point :around t :scroll-bar t :margin t)))
 
