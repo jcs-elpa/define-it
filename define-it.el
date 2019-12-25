@@ -153,7 +153,7 @@
      content
      (with-temp-buffer
        (insert data)
-       (setq dom (libxml-parse-html-region (point-min) (point-max) nil t))
+       (setq dom (libxml-parse-html-region (point-min) (point-max)))
        (delete-region (point-min) (point-max))  ; Remove all content.
        (setq text (dom-texts (dom-by-class dom "dictentry")))
        (setq text (s-replace-regexp "\\(^\\s-*$\\)\n" "\n" text))
@@ -278,7 +278,7 @@
 
 (cl-defun define-it--in-pop (content &key point)
   "Define in the pop with CONTENT.
-The location POINT. TIMEOUT for not forever delay."
+The location POINT.  TIMEOUT for not forever delay."
   (if (display-graphic-p)
       (progn
         (pos-tip-show
