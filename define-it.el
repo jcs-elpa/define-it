@@ -61,7 +61,7 @@
   :group 'define-it)
 (defvar define-it-pop-tip-color 'define-it-pop-tip-color)
 
-(defcustom define-it-output-choice 'pop
+(defcustom define-it-output-choice 'view
   "Option to show output."
   :type '(choice (const :tag "view" view)
                  (const :tag "pop" pop))
