@@ -6,7 +6,7 @@
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; Description: Define the word.
 ;; Keyword: dictionary explanation search wiki
-;; Version: 0.0.6
+;; Version: 0.0.7
 ;; Package-Requires: ((emacs "25.1") (s "1.12.0") (request "0.3.0") (popup "0.5.3") (pos-tip "0.4.6") (google-translate "0.11.18") (wiki-summary "0.1"))
 ;; URL: https://github.com/jcs090218/define-it
 
@@ -72,13 +72,23 @@
   :type 'boolean
   :group 'define-it)
 
-(defcustom define-it-delimiter-header "\n=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>=>\n"
-  "String that display for header delimiter."
+(defcustom define-it-define-word-header "--{{ DEFINE }}--\n\n"
+  "Header for current defining word."
   :type 'string
   :group 'define-it)
 
-(defcustom define-it-delimiter-info "\n=>=================================\n"
-  "String that display for information delimiter."
+(defcustom define-it-definition-header "\n\n--{{ DICTIONARY }}--\n\n"
+  "Header for dictionary definition."
+  :type 'string
+  :group 'define-it)
+
+(defcustom define-it-translate-header "\n\n--{{TRANSLATION }}--\n\n"
+  "Header to translation."
+  :type 'string
+  :group 'define-it)
+
+(defcustom define-it-wiki-summary-header "\n\n--{{ WIKIPEDIA SUMMARY }}--\n\n"
+  "Header for wikipedia summary."
   :type 'string
   :group 'define-it)
 
@@ -238,7 +248,7 @@
 (defun define-it--form-title-format ()
   "Form the title format."
   (if define-it-show-header
-      (format "[DEFINE]: %s%s" define-it--current-word define-it-delimiter-header)
+      (format "%s%s" define-it-define-word-header define-it--current-word)
     ""))
 
 (defun define-it--form-info-format ()
@@ -246,7 +256,7 @@
   (let ((index 0) (count (define-it--show-count))
         (output ""))
     (while (< index count)
-      (setq output (concat output "%s" (if (= index (1- count)) "" define-it-delimiter-info)))
+      (setq output (concat output "%s"))
       (setq index (1+ index)))
     output))
 
@@ -256,9 +266,15 @@
     (setq
      info-ptr
      (cl-case start
-       (0 (if define-it-show-dictionary-definition define-it--dictionary-content nil))
-       (1 (if define-it-show-google-translate define-it--google-translated-content nil))
-       (2 (if define-it-show-wiki-summary define-it--wiki-summary-content nil))
+       (0 (if define-it-show-dictionary-definition
+              (format "%s%s" define-it-definition-header define-it--dictionary-content)
+            nil))
+       (1 (if define-it-show-google-translate
+              (format "%s%s" define-it-translate-header define-it--google-translated-content)
+            nil))
+       (2 (if define-it-show-wiki-summary
+              (format "%s%s" define-it-wiki-summary-header define-it--wiki-summary-content)
+            nil))
        (t "")))  ; Finally returned something to prevent error/infinite loop.
     (if info-ptr
         (setq define-it--get-def-index (1+ start))  ; Add one, ready for next use.
