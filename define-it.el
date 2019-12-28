@@ -118,6 +118,23 @@
   :group 'define-it)
 (defvar define-it-headline-face 'define-it-headline-face)
 
+(defface define-it-var-face
+  '((t (:foreground "#17A0FB" :bold t)))
+  "Face for synonyms."
+  :group 'define-it)
+(defvar define-it-var-face 'define-it-var-face)
+
+(defface define-it-sense-number-face
+  '((t (:foreground "#C12D51" :bold t)))
+  "Face for sense number."
+  :group 'define-it)
+(defvar define-it-sense-number-face 'define-it-sense-number-face)
+
+(defface define-it-type-face
+  '((t (:foreground "#B5CCEB")))
+  "Face for type."
+  :group 'define-it)
+(defvar define-it-type-face 'define-it-type-face)
 
 (defvar define-it--define-timer nil
   "Timer for defining.")
@@ -162,6 +179,17 @@
     (beginning-of-line)
     (define-it--delete-line 1)))
 
+(defun define-it--put-text-property-by-string (str fc)
+  "Put the text property by STR and FC."
+  (goto-char (point-min))
+  (let ((st-pt -1) (end-pt -1))
+    (while (ignore-errors (re-search-forward str))
+      (setq end-pt (point))
+      (save-excursion
+        (when (ignore-errors (re-search-backward str))
+          (setq st-pt (point))))
+      (put-text-property st-pt end-pt 'face fc))))
+
 (defun define-it--parse-dictionary (data)
   "Parse dictionary HTML from DATA."
   (let ((content "") (dom nil) (text ""))
@@ -172,13 +200,17 @@
        (setq dom (libxml-parse-html-region (point-min) (point-max)))
        (delete-region (point-min) (point-max))  ; Remove all content.
        (setq text (dom-texts (dom-by-class dom "dictentry")))
+       (insert text)
        (setq text (s-replace-regexp "\\(^\\s-*$\\)\n" "\n" text))
        (insert text)
        (progn  ; Start tweeking buffer.
          (progn  ; Removed useless header section.
            (goto-char (point-min))
-           (search-forward ")")
-           (delete-region (point-min) (point)))
+           (while (ignore-errors (search-forward "Word Frequency"))
+             (define-it--delete-line 1)
+             (let ((word-pt (point)))
+               (search-forward ")")
+               (delete-region word-pt (point)))))
          (progn  ; Removed Copyright.
            (define-it--strip-string-from-buffer-with-line "Copyright")
            (define-it--strip-string-from-buffer-with-line "All rights reserved"))
@@ -189,11 +221,42 @@
              (define-it--delete-line 12)))
          (progn
            (define-it--strip-string-from-buffer "    More Synonyms of")
-           (define-it--strip-string-from-buffer "More Synonyms of")))
-       ;; Cleaned last trailing empty lines with `string-trim'.
-       (s-replace-regexp
-        "\\(^\\s-*$\\)\n" "\n"
-        (string-trim (buffer-string)))))  ; Return it.
+           (define-it--strip-string-from-buffer "More Synonyms of"))
+         (progn
+           (goto-char (point-min))
+           (while (ignore-errors (re-search-forward "[0-9]+[.]  "))
+             (forward-line 1)
+             (let ((st-pt (line-beginning-position)) (end-pt -1)
+                   (old-content "") (new-content ""))
+               (ignore-errors (search-forward-regexp "^[ \t]*\n"))
+               (forward-line -1)
+               (setq end-pt (line-end-position))
+               (setq old-content (buffer-substring st-pt end-pt))
+               (setq new-content (s-replace-regexp "[ ]*\n[ ]*" " " old-content))
+               (delete-region st-pt end-pt)
+               (insert (format "%s\n" new-content)))))
+         (progn  ; Pretty syntax
+           (let ((current-content (buffer-string)))
+             (delete-region (point-min) (point-max))  ; Remove all content.
+             (setq current-content (s-replace-regexp "[ ]+" " " current-content))
+             (setq current-content (s-replace-regexp "[ ]+[.]" "." current-content))
+             (setq current-content (s-replace-regexp "[ \n]*,[ \n]*" ", " current-content))
+             (setq current-content (s-replace-regexp "Synonyms:[ ]*\n " "Synonyms: " current-content))
+             (setq current-content (s-replace-regexp "[ ]*Synonyms:[ ]*" "Synonyms: " current-content))
+             (setq current-content (s-replace-regexp "Synonyms: " "  Synonyms: " current-content))
+             (setq current-content (s-replace-regexp "[]][ ]\n  Synonyms: " "] \n\n  Synonyms: " current-content))
+             (setq current-content (s-replace-regexp "[ \n]*[[] " " [ " current-content))
+             (setq current-content (s-replace-regexp "[ \n]+)" " )" current-content))
+             (setq current-content (s-replace-regexp "  " " " current-content))
+             ;; Cleaned last trailing empty lines with `string-trim'.
+             (setq current-content (s-replace-regexp "\\(^\\s-*$\\)\n" "\n" (string-trim current-content)))
+             (insert current-content)))
+         (progn  ; Propertize text.
+           (define-it--put-text-property-by-string "Word forms:" define-it-var-face)
+           (define-it--put-text-property-by-string "Synonyms:" define-it-var-face)
+           (define-it--put-text-property-by-string " [0-9][.] [a-zA-Z]+ " define-it-sense-number-face)
+           (define-it--put-text-property-by-string "[[][a-zA-Z +-=_]*[]]" define-it-type-face)))
+       (buffer-string)))
     content))
 
 (defun define-it--get-dictionary-definition-as-string (search-str)
@@ -327,7 +390,7 @@ The location POINT.  TIMEOUT for not forever delay."
       (insert content) (insert "\n")
       (goto-char (point-min))
       (view-mode 1)
-      (visual-line-mode 1))
+      (visual-line-mode -1))
     (pop-to-buffer buf)))
 
 (defun define-it--received-info-p ()
