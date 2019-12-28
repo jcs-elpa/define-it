@@ -112,6 +112,12 @@
   :type 'integer
   :group 'define-its)
 
+(defface define-it-headline-face
+  '((t (:foreground "gold4" :bold t)))
+  "Face for headline."
+  :group 'define-it)
+(defvar define-it-headline-face 'define-it-headline-face)
+
 
 (defvar define-it--define-timer nil
   "Timer for defining.")
@@ -248,7 +254,9 @@
 (defun define-it--form-title-format ()
   "Form the title format."
   (if define-it-show-header
-      (format "%s%s" define-it-define-word-header define-it--current-word)
+      (format "%s%s"
+              (propertize define-it-define-word-header 'face define-it-headline-face)
+              define-it--current-word)
     ""))
 
 (defun define-it--form-info-format ()
@@ -267,13 +275,19 @@
      info-ptr
      (cl-case start
        (0 (if define-it-show-dictionary-definition
-              (format "%s%s" define-it-definition-header define-it--dictionary-content)
+              (format "%s%s"
+                      (propertize define-it-definition-header 'face define-it-headline-face)
+                      define-it--dictionary-content)
             nil))
        (1 (if define-it-show-google-translate
-              (format "%s%s" define-it-translate-header define-it--google-translated-content)
+              (format "%s%s"
+                      (propertize define-it-translate-header 'face define-it-headline-face)
+                      define-it--google-translated-content)
             nil))
        (2 (if define-it-show-wiki-summary
-              (format "%s%s" define-it-wiki-summary-header define-it--wiki-summary-content)
+              (format "%s%s"
+                      (propertize define-it-wiki-summary-header 'face define-it-headline-face)
+                      define-it--wiki-summary-content)
             nil))
        (t "")))  ; Finally returned something to prevent error/infinite loop.
     (if info-ptr
@@ -312,7 +326,6 @@ The location POINT.  TIMEOUT for not forever delay."
       (delete-region (point-min) (point-max))  ; Remove all content.
       (insert content) (insert "\n")
       (goto-char (point-min))
-      (text-mode)
       (view-mode 1)
       (visual-line-mode 1))
     (pop-to-buffer buf)))
