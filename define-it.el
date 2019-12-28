@@ -154,6 +154,18 @@
 (defvar define-it--get-def-index 0 "Record index for getting definition order.")
 
 
+(defun define-it--current-line-empty-p ()
+  "Current line empty, but accept spaces/tabs in there."
+  (save-excursion
+    (beginning-of-line)
+    (looking-at "[[:space:]\t]*$")))
+
+(defun define-it--next-not-blank-line ()
+  "Goto next not blank line."
+  (forward-line 1)
+  (while (define-it--current-line-empty-p)
+    (forward-line 1)))
+
 (defun define-it--delete-line (n)
   "Delete N line from current point."
   (let ((index 0))
@@ -224,8 +236,13 @@
            (define-it--strip-string-from-buffer "More Synonyms of"))
          (progn
            (goto-char (point-min))
-           (while (ignore-errors (re-search-forward "[0-9]+[.]  "))
-             (forward-line 1)
+           (let ((case-fold-search nil))
+             (while (ignore-errors (re-search-forward "[0-9]+[._ ]+[^A-Z]+"))
+               (insert "\n\n"))))
+         (progn  ; Minimize sense number.
+           (goto-char (point-min))
+           (while (ignore-errors (re-search-forward "[0-9]+[.  ]+"))
+             (define-it--next-not-blank-line)
              (let ((st-pt (line-beginning-position)) (end-pt -1)
                    (old-content "") (new-content ""))
                (ignore-errors (search-forward-regexp "^[ \t]*\n"))
@@ -248,13 +265,14 @@
              (setq current-content (s-replace-regexp "[ \n]*[[] " " [ " current-content))
              (setq current-content (s-replace-regexp "[ \n]+)" " )" current-content))
              (setq current-content (s-replace-regexp "  " " " current-content))
+             (setq current-content (s-replace-regexp "[]][ ]+[^ \n]" "] \n" current-content))
              ;; Cleaned last trailing empty lines with `string-trim'.
              (setq current-content (s-replace-regexp "\\(^\\s-*$\\)\n" "\n" (string-trim current-content)))
              (insert current-content)))
          (progn  ; Propertize text.
            (define-it--put-text-property-by-string "Word forms:" define-it-var-face)
            (define-it--put-text-property-by-string "Synonyms:" define-it-var-face)
-           (define-it--put-text-property-by-string " [0-9][.] [a-zA-Z]+ " define-it-sense-number-face)
+           (define-it--put-text-property-by-string "[0-9][.][^\n]+" define-it-sense-number-face)
            (define-it--put-text-property-by-string "[[][a-zA-Z +-=_]*[]]" define-it-type-face)))
        (buffer-string)))
     content))
@@ -391,7 +409,7 @@ The location POINT.  TIMEOUT for not forever delay."
       (goto-char (point-min))
       (view-mode 1)
       (visual-line-mode -1))
-    (pop-to-buffer buf)))
+    (save-selected-window (pop-to-buffer buf))))
 
 (defun define-it--received-info-p ()
   "Check if received all informations."
