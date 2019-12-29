@@ -275,9 +275,9 @@
          (progn
            (goto-char (point-min))
            (let ((case-fold-search nil))
-             (while (define-it--re-search-forward "[0-9]+[._]+[^A-Z0-9]+")
+             (while (define-it--re-search-forward "[0-9]+[. ]+[^A-Z0-9]+")
                (save-excursion
-                 (define-it--re-search-backward "[0-9]+[._]+[^A-Z0-9]+")
+                 (define-it--re-search-backward "[0-9]+[. ]+[^A-Z0-9]+")
                  (while (not (string= (string (char-before)) " ")) (forward-char -1))
                  (insert "\n\n"))
                (insert "\n\n"))))
@@ -294,11 +294,6 @@
                (setq new-content (s-replace-regexp "[ ]*\n[ ]*" " " old-content))
                (delete-region st-pt end-pt)
                (insert (format "%s\n" new-content)))))
-         (progn  ; Split all ]
-           (goto-char (point-min))
-           (while (define-it--re-search-forward "[]][ ][^\n]")
-             (forward-char -1)
-             (insert "\n")))
          ;; Pretty syntax
          (define-it--buffer-replace
            (lambda (current-content)
@@ -312,9 +307,16 @@
              (setq current-content (s-replace-regexp "[ \n]*[[] " " [ " current-content))
              (setq current-content (s-replace-regexp "[ \n]+)" " )" current-content))
              (setq current-content (s-replace-regexp "  " " " current-content))
+             (setq current-content (s-replace " " "" current-content))
+             (setq current-content (s-replace " \n " " " current-content))
              ;; Cleaned last trailing empty lines with `string-trim'.
              (setq current-content (s-replace-regexp "\\(^\\s-*$\\)\n" "\n" (string-trim current-content)))
              current-content))
+         (progn  ; Split all ]
+           (goto-char (point-min))
+           (while (define-it--re-search-forward "[]][ ][^\n]")
+             (forward-char -1)
+             (insert "\n")))
          ;; Fix Synonyms
          (define-it--through-buffer-by-line
            (lambda (line)
@@ -369,6 +371,7 @@
            (define-it--put-text-property-by-string "Word forms:" define-it-var-face)
            (define-it--put-text-property-by-string "Example:" define-it-var-face)
            (define-it--put-text-property-by-string "Synonyms:" define-it-var-face)
+           (define-it--put-text-property-by-string "Phrasal verbs:" define-it-var-face)
            (define-it--put-text-property-by-string "^[0-9]+[.][^\n]+" define-it-sense-number-face)
            (define-it--put-text-property-by-string "[[][a-zA-Z +-=_]*[]]" define-it-type-face)))
        (buffer-string)))
