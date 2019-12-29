@@ -55,12 +55,6 @@
   :group 'tool
   :link '(url-link :tag "Repository" "https://github.com/jcs090218/define-it"))
 
-(defface define-it-pop-tip-color
-  '((t (:foreground "#000000" :background "#FFF08A")))
-  "Pop tip color, for graphic mode only."
-  :group 'define-it)
-(defvar define-it-pop-tip-color 'define-it-pop-tip-color)
-
 (defcustom define-it-output-choice 'view
   "Option to show output."
   :type '(choice (const :tag "view" view)
@@ -72,22 +66,22 @@
   :type 'boolean
   :group 'define-it)
 
-(defcustom define-it-define-word-header "--{{ DEFINE }}--\n\n"
+(defcustom define-it-define-word-header "DEFINE\n\n"
   "Header for current defining word."
   :type 'string
   :group 'define-it)
 
-(defcustom define-it-definition-header "\n\n--{{ DICTIONARY }}--\n\n"
+(defcustom define-it-definition-header "\n\nDICTIONARY\n\n"
   "Header for dictionary definition."
   :type 'string
   :group 'define-it)
 
-(defcustom define-it-translate-header "\n\n--{{TRANSLATION }}--\n\n"
+(defcustom define-it-translate-header "\n\nTRANSLATION\n\n"
   "Header to translation."
   :type 'string
   :group 'define-it)
 
-(defcustom define-it-wiki-summary-header "\n\n--{{ WIKIPEDIA SUMMARY }}--\n\n"
+(defcustom define-it-wiki-summary-header "\n\nWIKIPEDIA SUMMARY\n\n"
   "Header for wikipedia summary."
   :type 'string
   :group 'define-it)
@@ -112,8 +106,14 @@
   :type 'integer
   :group 'define-its)
 
+(defface define-it-pop-tip-color
+  '((t (:foreground "#000000" :background "#FFF08A")))
+  "Pop tip color, for graphic mode only."
+  :group 'define-it)
+(defvar define-it-pop-tip-color 'define-it-pop-tip-color)
+
 (defface define-it-headline-face
-  '((t (:foreground "gold4" :bold t)))
+  '((t (:foreground "gold4" :bold t :height 200)))
   "Face for headline."
   :group 'define-it)
 (defvar define-it-headline-face 'define-it-headline-face)
@@ -154,11 +154,33 @@
 (defvar define-it--get-def-index 0 "Record index for getting definition order.")
 
 
+(defun define-it--re-search-backward (str)
+  "Seach backward from point for STR."
+  (ignore-errors (search-backward str)))
+
+(defun define-it--search-forward (str)
+  "Seach forward from point for STR."
+  (ignore-errors (search-forward str)))
+
+(defun define-it--re-search-backward (regexp)
+  "Seach backward from point for regular expression REGEXP with no error."
+  (ignore-errors (re-search-backward regexp)))
+
+(defun define-it--re-search-forward (regexp)
+  "Seach forward from point for regular expression REGEXP with no error."
+  (ignore-errors (re-search-forward regexp)))
+
 (defun define-it--current-line-empty-p ()
   "Current line empty, but accept spaces/tabs in there."
   (save-excursion
     (beginning-of-line)
     (looking-at "[[:space:]\t]*$")))
+
+(defun define-it--next-blank-line ()
+  "Goto next blank line."
+  (forward-line 1)
+  (while (not (define-it--current-line-empty-p))
+    (forward-line 1)))
 
 (defun define-it--next-not-blank-line ()
   "Goto next not blank line."
@@ -180,14 +202,14 @@
   "Strip the STR from current buffer."
   (goto-char (point-min))
   (let ((len (length str)))
-    (while (ignore-errors (search-forward str))
+    (while (define-it--search-forward str)
       (backward-char len)
       (delete-region (point) (1+ (line-end-position))))))
 
 (defun define-it--strip-string-from-buffer-with-line (str)
   "Strip the STR from current buffer with line."
   (goto-char (point-min))
-  (while (ignore-errors (search-forward str))
+  (while (define-it--search-forward str)
     (beginning-of-line)
     (define-it--delete-line 1)))
 
@@ -195,12 +217,25 @@
   "Put the text property by STR and FC."
   (goto-char (point-min))
   (let ((st-pt -1) (end-pt -1))
-    (while (ignore-errors (re-search-forward str))
+    (while (define-it--re-search-forward str)
       (setq end-pt (point))
       (save-excursion
-        (when (ignore-errors (re-search-backward str))
+        (when (define-it--re-search-backward str)
           (setq st-pt (point))))
       (put-text-property st-pt end-pt 'face fc))))
+
+(defun define-it--buffer-replace (fnc)
+  "FNC should return a string to replace current buffer."
+  (let ((current-content (buffer-string)))
+    (delete-region (point-min) (point-max))  ; Remove all content.
+    (insert (funcall fnc current-content))))
+
+(defun define-it--through-buffer-by-line (fnc)
+  "Go through buffer by line and execute FNC on each line."
+  (goto-char (point-min))
+  (while (not (= (point) (point-max)))
+    (funcall fnc (thing-at-point 'line))
+    (forward-line 1)))
 
 (defun define-it--parse-dictionary (data)
   "Parse dictionary HTML from DATA."
@@ -218,7 +253,7 @@
        (progn  ; Start tweeking buffer.
          (progn  ; Removed useless header section.
            (goto-char (point-min))
-           (while (ignore-errors (search-forward "Word Frequency"))
+           (while (define-it--search-forward "Word Frequency")
              (define-it--delete-line 1)
              (let ((word-pt (point)))
                (search-forward ")")
@@ -228,7 +263,7 @@
            (define-it--strip-string-from-buffer-with-line "All rights reserved"))
          (progn  ; Removed embedded scripts. (For AdBlock)
            (goto-char (point-min))
-           (while (ignore-errors (search-forward "googletag.cmd"))
+           (while (define-it--search-forward "googletag.cmd")
              ;; Code is always 12 line embedded.
              (define-it--delete-line 12)))
          (progn
@@ -237,11 +272,15 @@
          (progn
            (goto-char (point-min))
            (let ((case-fold-search nil))
-             (while (ignore-errors (re-search-forward "[0-9]+[._ ]+[^A-Z]+"))
+             (while (define-it--re-search-forward "[0-9]+[._]+[^A-Z0-9]+")
+               (save-excursion
+                 (define-it--re-search-backward "[0-9]+[._]+[^A-Z0-9]+")
+                 (while (not (string= (string (char-before)) " ")) (forward-char -1))
+                 (insert "\n\n"))
                (insert "\n\n"))))
          (progn  ; Minimize sense number.
            (goto-char (point-min))
-           (while (ignore-errors (re-search-forward "[0-9]+[.  ]+"))
+           (while (define-it--re-search-forward "[0-9]+[.  ]+")
              (define-it--next-not-blank-line)
              (let ((st-pt (line-beginning-position)) (end-pt -1)
                    (old-content "") (new-content ""))
@@ -252,9 +291,14 @@
                (setq new-content (s-replace-regexp "[ ]*\n[ ]*" " " old-content))
                (delete-region st-pt end-pt)
                (insert (format "%s\n" new-content)))))
-         (progn  ; Pretty syntax
-           (let ((current-content (buffer-string)))
-             (delete-region (point-min) (point-max))  ; Remove all content.
+         (progn  ; Split all ]
+           (goto-char (point-min))
+           (while (define-it--re-search-forward "[]][ ][^\n]")
+             (forward-char -1)
+             (insert "\n")))
+         ;; Pretty syntax
+         (define-it--buffer-replace
+           (lambda (current-content)
              (setq current-content (s-replace-regexp "[ ]+" " " current-content))
              (setq current-content (s-replace-regexp "[ ]+[.]" "." current-content))
              (setq current-content (s-replace-regexp "[ \n]*,[ \n]*" ", " current-content))
@@ -265,14 +309,64 @@
              (setq current-content (s-replace-regexp "[ \n]*[[] " " [ " current-content))
              (setq current-content (s-replace-regexp "[ \n]+)" " )" current-content))
              (setq current-content (s-replace-regexp "  " " " current-content))
-             (setq current-content (s-replace-regexp "[]][ ]+[^ \n]" "] \n" current-content))
              ;; Cleaned last trailing empty lines with `string-trim'.
              (setq current-content (s-replace-regexp "\\(^\\s-*$\\)\n" "\n" (string-trim current-content)))
-             (insert current-content)))
+             current-content))
+         ;; Fix Synonyms
+         (define-it--through-buffer-by-line
+           (lambda (line)
+             (let ((last-line-syn nil))
+               (when (string-match-p "Synonyms:" line)
+                 (save-excursion
+                   (forward-line -1)
+                   (setq last-line-syn (string-match-p "Synonyms:" (thing-at-point 'line))))
+                 (move-to-column 0)
+                 (unless last-line-syn (insert "\n"))))))
+         ;; Add Example
+         (let ((blank-line-count 0))
+           (define-it--through-buffer-by-line
+             (lambda (line)
+               (if (or (string-match-p "[0-9]+[.] " line) (string-match-p "[:]" line))
+                   (setq blank-line-count 0)
+                 (let ((blank-ln (define-it--current-line-empty-p)))
+                   ;; Found example.
+                   (when (and (= blank-line-count 2) (not blank-ln))
+                     (move-to-column 0) (insert " Example: "))
+                   (when blank-ln (setq blank-line-count (1+ blank-line-count))))))))
+         ;; Post process
+         (define-it--buffer-replace
+           (lambda (current-content)
+             (setq current-content (s-replace "  " " " current-content))
+             (setq current-content (s-replace "[^ ]\n[^ ]" " " current-content))
+             (setq current-content (s-replace-regexp "[.][^\n][\n]*See" ". See" current-content))
+             (setq current-content (s-replace-regexp "\\(^\\s-*$\\)\n" "\n" current-content))
+             current-content))
+         ;; Fix definition
+         (let ((blank-line-count 0))
+           (define-it--through-buffer-by-line
+             (lambda (line)
+               (if (or (string-match-p "[0-9]+[.] " line) (string-match-p "[:]" line))
+                   (setq blank-line-count 0)
+                 (let ((blank-ln (define-it--current-line-empty-p)))
+                   ;; Found definition.
+                   (when (and (= blank-line-count 1) (not blank-ln))
+                     (let ((st-pt -1) (end-pt -1) (old-content "") (new-content ""))
+                       (setq st-pt (line-beginning-position))
+                       (save-excursion
+                         (define-it--next-blank-line)
+                         (forward-line -1)
+                         (setq end-pt (line-end-position)))
+                       (setq old-content (buffer-substring st-pt end-pt))
+                       (delete-region st-pt end-pt)
+                       (setq new-content (s-replace "\n" " " old-content))
+                       (setq new-content (s-replace "  " " " new-content))
+                       (insert new-content)))
+                   (when blank-ln (setq blank-line-count (1+ blank-line-count))))))))
          (progn  ; Propertize text.
            (define-it--put-text-property-by-string "Word forms:" define-it-var-face)
+           (define-it--put-text-property-by-string "Example:" define-it-var-face)
            (define-it--put-text-property-by-string "Synonyms:" define-it-var-face)
-           (define-it--put-text-property-by-string "[0-9][.][^\n]+" define-it-sense-number-face)
+           (define-it--put-text-property-by-string "^[0-9]+[.][^\n]+" define-it-sense-number-face)
            (define-it--put-text-property-by-string "[[][a-zA-Z +-=_]*[]]" define-it-type-face)))
        (buffer-string)))
     content))
@@ -281,7 +375,7 @@
   "Return the dictionary definition as a string with SEARCH-STR."
   (setq define-it--dictionary-it nil)
   (request
-   (format "https://www.collinsdictionary.com/dictionary/english/%s" search-str)
+    (format "https://www.collinsdictionary.com/dictionary/english/%s" search-str)
    :type "GET"
    :parser 'buffer-string
    :success
@@ -408,7 +502,7 @@ The location POINT.  TIMEOUT for not forever delay."
       (insert content) (insert "\n")
       (goto-char (point-min))
       (view-mode 1)
-      (visual-line-mode -1))
+      (visual-line-mode 1))
     (save-selected-window (pop-to-buffer buf))))
 
 (defun define-it--received-info-p ()
