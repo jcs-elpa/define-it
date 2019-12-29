@@ -270,7 +270,7 @@
              ;; Code is always 12 line embedded.
              (define-it--delete-line 12)))
          (progn
-           (define-it--strip-string-from-buffer "    More Synonyms of")
+           (define-it--strip-string-from-buffer "    More Synonyms of")
            (define-it--strip-string-from-buffer "More Synonyms of"))
          (progn
            (goto-char (point-min))
@@ -283,7 +283,7 @@
                (insert "\n\n"))))
          (progn  ; Minimize sense number.
            (goto-char (point-min))
-           (while (define-it--re-search-forward "[0-9]+[.  ]+")
+           (while (define-it--re-search-forward "[0-9]+[.  ]+")
              (define-it--next-not-blank-line)
              (let ((st-pt (line-beginning-position)) (end-pt -1)
                    (old-content "") (new-content ""))
@@ -311,7 +311,7 @@
              (setq current-content (s-replace-regexp "[]][ ]\n  Synonyms: " "] \n\n  Synonyms: " current-content))
              (setq current-content (s-replace-regexp "[ \n]*[[] " " [ " current-content))
              (setq current-content (s-replace-regexp "[ \n]+)" " )" current-content))
-             (setq current-content (s-replace-regexp "  " " " current-content))
+             (setq current-content (s-replace-regexp "  " " " current-content))
              ;; Cleaned last trailing empty lines with `string-trim'.
              (setq current-content (s-replace-regexp "\\(^\\s-*$\\)\n" "\n" (string-trim current-content)))
              current-content))
@@ -378,7 +378,7 @@
   "Return the dictionary definition as a string with SEARCH-STR."
   (setq define-it--dictionary-it nil)
   (request
-    (format "https://www.collinsdictionary.com/dictionary/english/%s" search-str)
+   (format "https://www.collinsdictionary.com/dictionary/english/%s" search-str)
    :type "GET"
    :parser 'buffer-string
    :success
