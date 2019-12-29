@@ -141,6 +141,9 @@
 (defvar define-it--update-time 0.1
   "Run every this seconds until all information is received.")
 
+(defconst define-it--buffer-name-format "*define-it: %s*"
+  "Format for buffer name.")
+
 (defvar define-it--current-word "" "Record the search word.")
 
 (defvar define-it--dictionary-it nil "Flag to check if dictionary search done.")
@@ -494,7 +497,7 @@ The location POINT.  TIMEOUT for not forever delay."
 
 (defun define-it--in-buffer (content)
   "Define in the buffer with CONTENT."
-  (let* ((name (format "*define-it:%s*" define-it--current-word))
+  (let* ((name (format define-it--buffer-name-format define-it--current-word))
          (buf (if (get-buffer name) (get-buffer name) (generate-new-buffer name))))
     (with-current-buffer buf
       (view-mode -1)
