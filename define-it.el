@@ -378,22 +378,22 @@
   "Return the dictionary definition as a string with SEARCH-STR."
   (setq define-it--dictionary-it nil)
   (request
-   (format "https://www.collinsdictionary.com/dictionary/english/%s" search-str)
-   :type "GET"
-   :parser 'buffer-string
-   :success
-   (cl-function
-    (lambda (&key data &allow-other-keys)
-      (setq define-it--dictionary-it t)
-      (setq define-it--dictionary-content
-            (if (string-match-p "Sorry, no results" data)
-                "No definition found"
-              (define-it--parse-dictionary data)))))
-   :error
-   ;; NOTE: Accept, error.
-   (cl-function
-    (lambda (&rest args &key _error-thrown &allow-other-keys)
-      (setq define-it--dictionary-it t)))))
+    (format "https://www.collinsdictionary.com/dictionary/english/%s" search-str)
+    :type "GET"
+    :parser 'buffer-string
+    :success
+    (cl-function
+     (lambda (&key data &allow-other-keys)
+       (setq define-it--dictionary-it t)
+       (setq define-it--dictionary-content
+             (if (string-match-p "Sorry, no results" data)
+                 "No definition found"
+               (define-it--parse-dictionary data)))))
+    :error
+    ;; NOTE: Accept, error.
+    (cl-function
+     (lambda (&rest args &key _error-thrown &allow-other-keys)
+       (setq define-it--dictionary-it t)))))
 
 (defun define-it--get-google-translate-as-string (search-str)
   "Return the google translate as a string with SEARCH-STR."
