@@ -6,7 +6,7 @@
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; Description: Define the word.
 ;; Keyword: dictionary explanation search wiki
-;; Version: 0.1.2
+;; Version: 0.1.3
 ;; Package-Requires: ((emacs "25.1") (s "1.12.0") (request "0.3.0") (popup "0.5.3") (pos-tip "0.4.6") (google-translate "0.11.18") (wiki-summary "0.1"))
 ;; URL: https://github.com/jcs090218/define-it
 
@@ -157,7 +157,7 @@
 (defvar define-it--get-def-index 0 "Record index for getting definition order.")
 
 
-(defun define-it--re-search-backward (str)
+(defun define-it--search-backward (str)
   "Seach backward from point for STR."
   (ignore-errors (search-backward str)))
 
