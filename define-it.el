@@ -159,23 +159,23 @@
 
 (defun define-it--search-backward (str)
   "Seach backward from point for STR."
-  (ignore-errors (search-backward str)))
+  (search-backward str nil t))
 
 (defun define-it--search-forward (str)
   "Seach forward from point for STR."
-  (ignore-errors (search-forward str)))
+  (search-forward str nil t))
 
 (defun define-it--re-search-backward (regexp &optional case)
   "Seach backward from point for regular expression REGEXP with no error.
 CASE are flag for `case-fold-search'."
   (let ((case-fold-search case))
-    (ignore-errors (re-search-backward regexp))))
+    (re-search-backward regexp nil t)))
 
 (defun define-it--re-search-forward (regexp &optional case)
   "Seach forward from point for regular expression REGEXP with no error.
 CASE are flag for `case-fold-search'."
   (let ((case-fold-search case))
-    (ignore-errors (re-search-forward regexp))))
+    (re-search-forward regexp nil t)))
 
 (defun define-it--current-line-empty-p ()
   "Current line empty, but accept spaces/tabs in there."
@@ -287,7 +287,7 @@ CASE are flag for `case-fold-search'."
            (while (define-it--search-forward "Word Frequency")
              (define-it--delete-line 1)
              (let ((word-pt (point)))
-               (search-forward define-it--current-word)
+               (define-it--search-forward define-it--current-word)
                (delete-region word-pt (point)))))
          (progn  ; Removed Copyright.
            (define-it--strip-string-from-buffer-with-line "Copyright")
