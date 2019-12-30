@@ -182,7 +182,8 @@
 (defun define-it--next-blank-line ()
   "Goto next blank line."
   (forward-line 1)
-  (while (not (define-it--current-line-empty-p))
+  (while (and (not (define-it--current-line-empty-p))
+              (not (= (point) (point-max))))
     (forward-line 1)))
 
 (defun define-it--next-not-blank-line ()
@@ -240,6 +241,26 @@
     (funcall fnc (thing-at-point 'line))
     (forward-line 1)))
 
+(defun define-it--through-buffer-by-blank-line (fnc)
+  "Go through buffer by blank line and execute FNC on each line."
+  (goto-char (point-min))
+  (while (not (= (point) (point-max)))
+    (funcall fnc (thing-at-point 'line))
+    (define-it--next-blank-line)))
+
+(defun define-it--fix-gap-between-same-sections (str)
+  "Fixed the same sections' gap lines."
+  (define-it--through-buffer-by-blank-line
+    (lambda (line)
+      (let ((last-line-str nil) (next-line-str nil))
+        (save-excursion
+          (forward-line -1)
+          (setq last-line-str (string-match-p str (thing-at-point 'line))))
+        (save-excursion
+          (forward-line 1)
+          (setq next-line-str (string-match-p str (thing-at-point 'line))))
+        (when (and next-line-str last-line-str) (define-it--delete-line 1))))))
+
 (defun define-it--parse-dictionary (data)
   "Parse dictionary HTML from DATA."
   (let ((content "") (dom nil) (text ""))
@@ -250,7 +271,6 @@
        (setq dom (libxml-parse-html-region (point-min) (point-max)))
        (delete-region (point-min) (point-max))  ; Remove all content.
        (setq text (dom-texts (dom-by-class dom "dictentry")))
-       (insert text)
        (setq text (s-replace-regexp "\\(^\\s-*$\\)\n" "\n" text))
        (insert text)
        (progn  ; Start tweeking buffer.
@@ -297,6 +317,7 @@
          ;; Pretty syntax
          (define-it--buffer-replace
            (lambda (current-content)
+             (setq current-content (s-replace "]  " "]  \n\n" current-content))
              (setq current-content (s-replace-regexp "[ ]+" " " current-content))
              (setq current-content (s-replace-regexp "[ ]+[.]" "." current-content))
              (setq current-content (s-replace-regexp "[ \n]*,[ \n]*" ", " current-content))
@@ -314,7 +335,7 @@
          ;; Fixed missing headline
          (progn
            (goto-char (point-min))
-           (while (define-it--re-search-forward "[0-9]+[.]+[ ]*")
+           (while (define-it--re-search-forward "^[0-9]+[.]+[ ]*")
              (when (= (line-end-position) (point))
                (delete-char 1))))
          (progn  ; Split all ]
@@ -322,16 +343,6 @@
            (while (define-it--re-search-forward "[]][ ][^\n]")
              (forward-char -1)
              (insert "\n")))
-         ;; Fix Synonyms
-         (define-it--through-buffer-by-line
-           (lambda (line)
-             (let ((last-line-syn nil))
-               (when (string-match-p "Synonyms:" line)
-                 (save-excursion
-                   (forward-line -1)
-                   (setq last-line-syn (string-match-p "Synonyms:" (thing-at-point 'line))))
-                 (move-to-column 0)
-                 (unless last-line-syn (insert "\n"))))))
          ;; Add Example
          (let ((blank-line-count 0))
            (define-it--through-buffer-by-line
@@ -351,6 +362,9 @@
              (setq current-content (s-replace-regexp "[.][^\n][\n]*See" ". See" current-content))
              (setq current-content (s-replace-regexp "\\(^\\s-*$\\)\n" "\n" current-content))
              current-content))
+         ;; Fix Synonyms and Example gap.
+         (define-it--fix-gap-between-same-sections "Synonyms:")
+         (define-it--fix-gap-between-same-sections "Example:")
          ;; Fix definition
          (let ((blank-line-count 0))
            (define-it--through-buffer-by-line
