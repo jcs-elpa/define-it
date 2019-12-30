@@ -287,7 +287,7 @@ CASE are flag for `case-fold-search'."
            (while (define-it--search-forward "Word Frequency")
              (define-it--delete-line 1)
              (let ((word-pt (point)))
-               (search-forward ")")
+               (search-forward define-it--current-word)
                (delete-region word-pt (point)))))
          (progn  ; Removed Copyright.
            (define-it--strip-string-from-buffer-with-line "Copyright")
@@ -402,9 +402,25 @@ CASE are flag for `case-fold-search'."
              (let ((in-block nil))
                (save-excursion
                  (forward-char -2)
-                 (setq in-block (looking-back "[[\n.][a-zA-Z ]*" 10))
+                 (setq in-block (looking-back "[[\n.][a-zA-Z ]*" -10))
                  (when (and (not in-block) (not (define-it--line-match-p "[:]")))
                    (insert "\n * "))))))
+         (define-it--through-buffer-by-line
+           (lambda (line)
+             (let ((last-line-char nil) (next-char nil))
+               (save-excursion
+                 (forward-line -1)
+                 (move-to-column (1- (line-end-position)))
+                 (setq last-line-char (char-before)))
+               (save-excursion
+                 (move-to-column 1)
+                 (setq next-char (char-before)))
+               (when (and
+                      last-line-char next-char
+                      (not (string-match-p "[ \n]" (string last-line-char)))
+                      (not (string-match-p "[ \n]" (string next-char))))
+                 (delete-char -1)
+                 (insert " ")))))
          ;; Propertize text.
          (progn
            (define-it--put-text-property-by-string "Word forms:" define-it-var-face)
