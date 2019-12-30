@@ -406,7 +406,7 @@ CASE are flag for `case-fold-search'."
                  (when (and (not in-block) (not (define-it--line-match-p "[:]")))
                    (insert "\n * "))))))
          (define-it--through-buffer-by-line
-           (lambda (line)
+           (lambda (_line)
              (let ((last-line-char nil) (next-char nil))
                (save-excursion
                  (forward-line -1)
