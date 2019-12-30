@@ -303,15 +303,20 @@
              (setq current-content (s-replace-regexp "Synonyms:[ ]*\n " "Synonyms: " current-content))
              (setq current-content (s-replace-regexp "[ ]*Synonyms:[ ]*" "Synonyms: " current-content))
              (setq current-content (s-replace-regexp "Synonyms: " "  Synonyms: " current-content))
-             (setq current-content (s-replace-regexp "[]][ ]\n  Synonyms: " "] \n\n  Synonyms: " current-content))
+             (setq current-content (s-replace-regexp "Synonyms: " "\n\n  Synonyms: " current-content))
              (setq current-content (s-replace-regexp "[ \n]*[[] " " [ " current-content))
              (setq current-content (s-replace-regexp "[ \n]+)" " )" current-content))
              (setq current-content (s-replace-regexp "  " " " current-content))
              (setq current-content (s-replace " " "" current-content))
-             (setq current-content (s-replace " \n " " " current-content))
              ;; Cleaned last trailing empty lines with `string-trim'.
              (setq current-content (s-replace-regexp "\\(^\\s-*$\\)\n" "\n" (string-trim current-content)))
              current-content))
+         ;; Fixed missing headline
+         (progn
+           (goto-char (point-min))
+           (while (define-it--re-search-forward "[0-9]+[.]+[ ]*")
+             (when (= (line-end-position) (point))
+               (delete-char 1))))
          (progn  ; Split all ]
            (goto-char (point-min))
            (while (define-it--re-search-forward "[]][ ][^\n]")
