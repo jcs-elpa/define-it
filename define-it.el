@@ -419,7 +419,7 @@ CASE are flag for `case-fold-search'."
                       last-line-char next-char
                       (not (string-match-p "[ \n]" (string last-line-char)))
                       (not (string-match-p "[ \n]" (string next-char))))
-                 (delete-char -1)
+                 (ignore-errors (delete-char -1))
                  (insert " ")))))
          ;; Propertize text.
          (progn
