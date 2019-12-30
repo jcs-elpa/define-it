@@ -165,13 +165,17 @@
   "Seach forward from point for STR."
   (ignore-errors (search-forward str)))
 
-(defun define-it--re-search-backward (regexp)
-  "Seach backward from point for regular expression REGEXP with no error."
-  (ignore-errors (re-search-backward regexp)))
+(defun define-it--re-search-backward (regexp &optional case)
+  "Seach backward from point for regular expression REGEXP with no error.
+CASE are flag for `case-fold-search'."
+  (let ((case-fold-search case))
+    (ignore-errors (re-search-backward regexp))))
 
-(defun define-it--re-search-forward (regexp)
-  "Seach forward from point for regular expression REGEXP with no error."
-  (ignore-errors (re-search-forward regexp)))
+(defun define-it--re-search-forward (regexp &optional case)
+  "Seach forward from point for regular expression REGEXP with no error.
+CASE are flag for `case-fold-search'."
+  (let ((case-fold-search case))
+    (ignore-errors (re-search-forward regexp))))
 
 (defun define-it--current-line-empty-p ()
   "Current line empty, but accept spaces/tabs in there."
@@ -201,6 +205,10 @@
                      (if (< (point-max) (1+ (line-end-position)))
                          (point-max)
                        (1+ (line-end-position)))))))
+
+(defun define-it--line-match-p (regexp)
+  "Check REGEXP with current line."
+  (string-match-p regexp (thing-at-point 'line)))
 
 (defun define-it--strip-string-from-buffer (str)
   "Strip the STR from current buffer."
@@ -249,16 +257,16 @@
     (define-it--next-blank-line)))
 
 (defun define-it--fix-gap-between-same-sections (str)
-  "Fixed the same sections' gap lines."
+  "Fixed the same sections' gap lines by STR."
   (define-it--through-buffer-by-blank-line
-    (lambda (line)
+    (lambda (_line)
       (let ((last-line-str nil) (next-line-str nil))
         (save-excursion
           (forward-line -1)
-          (setq last-line-str (string-match-p str (thing-at-point 'line))))
+          (setq last-line-str (define-it--line-match-p str)))
         (save-excursion
           (forward-line 1)
-          (setq next-line-str (string-match-p str (thing-at-point 'line))))
+          (setq next-line-str (define-it--line-match-p str)))
         (when (and next-line-str last-line-str) (define-it--delete-line 1))))))
 
 (defun define-it--parse-dictionary (data)
@@ -338,7 +346,8 @@
            (while (define-it--re-search-forward "^[0-9]+[.]+[ ]*")
              (when (= (line-end-position) (point))
                (delete-char 1))))
-         (progn  ; Split all ]
+         ;; Split all ]
+         (progn
            (goto-char (point-min))
            (while (define-it--re-search-forward "[]][ ][^\n]")
              (forward-char -1)
@@ -386,7 +395,18 @@
                        (setq new-content (s-replace "  " " " new-content))
                        (insert new-content)))
                    (when blank-ln (setq blank-line-count (1+ blank-line-count))))))))
-         (progn  ; Propertize text.
+         ;; Fixed missing line break
+         (progn
+           (goto-char (point-min))
+           (while (define-it--re-search-forward "[A-Z][a-z]")
+             (let ((in-block nil))
+               (save-excursion
+                 (forward-char -2)
+                 (setq in-block (looking-back "[[\n.][a-zA-Z ]*" 10))
+                 (when (and (not in-block) (not (define-it--line-match-p "[:]")))
+                   (insert "\n * "))))))
+         ;; Propertize text.
+         (progn
            (define-it--put-text-property-by-string "Word forms:" define-it-var-face)
            (define-it--put-text-property-by-string "Example:" define-it-var-face)
            (define-it--put-text-property-by-string "Synonyms:" define-it-var-face)
