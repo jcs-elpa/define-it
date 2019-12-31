@@ -1,4 +1,6 @@
 [![Build Status](https://travis-ci.com/jcs090218/define-it.svg?branch=master)](https://travis-ci.com/jcs090218/define-it)
+[![MELPA](https://melpa.org/packages/define-it-badge.svg)](https://melpa.org/#/define-it)
+[![MELPA Stable](https://stable.melpa.org/packages/define-it-badge.svg)](https://stable.melpa.org/#/define-it)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 
