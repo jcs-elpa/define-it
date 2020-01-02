@@ -66,7 +66,6 @@ will output it in the another buffer.
 (setq define-it-output-choice 'pop)   ; Output with tooltip.
 ```
 
-
 ### About Google Translate
 
 If you wouldn't want to select the `source` and `destination` every time,
