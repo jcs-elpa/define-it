@@ -66,20 +66,6 @@ will output it in the another buffer.
 (setq define-it-output-choice 'pop)   ; Output with tooltip.
 ```
 
-### About Delimiter
-
-There are two type of delimiter string that you can customize.
-
-* `define-it-delimiter-header`  [FOR HEADER]
-* `define-it-delimiter-info`    [FOR OTHERS]
-
-If you don't want the header to be displayed toggle `define-it-show-header`
-variable.
-
-```el
-(setq define-it-show-header t)  ; Default is shown
-```
-
 
 ### About Google Translate
 
