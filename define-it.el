@@ -48,7 +48,6 @@
   ;; This stops the compiler from complaining.
   (defvar url-http-end-of-headers))
 
-
 (defgroup define-it nil
   "Define the word."
   :prefix "define-it-"
@@ -625,7 +624,6 @@ The location POINT.  TIMEOUT for not forever delay."
   (if (use-region-p)
       (define-it (buffer-substring-no-properties (region-beginning) (region-end)))
     (define-it (ignore-errors (substring-no-properties (thing-at-point 'word))))))
-
 
 (provide 'define-it)
 ;;; define-it.el ends here
