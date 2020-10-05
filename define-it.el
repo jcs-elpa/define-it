@@ -8,7 +8,7 @@
 ;; Keyword: dictionary explanation search wiki
 ;; Version: 0.2.4
 ;; Package-Requires: ((emacs "25.1") (s "1.12.0") (request "0.3.0") (popup "0.5.3") (pos-tip "0.4.6") (google-translate "0.11.18") (wiki-summary "0.1"))
-;; URL: https://github.com/jcs090218/define-it
+;; URL: https://github.com/jcs-elpa/define-it
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -52,7 +52,7 @@
   "Define the word."
   :prefix "define-it-"
   :group 'tool
-  :link '(url-link :tag "Repository" "https://github.com/jcs090218/define-it"))
+  :link '(url-link :tag "Repository" "https://github.com/jcs-elpa/define-it"))
 
 (defcustom define-it-output-choice 'view
   "Option to show output."
