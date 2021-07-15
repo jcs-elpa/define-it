@@ -1,8 +1,7 @@
-[![Build Status](https://travis-ci.com/jcs090218/define-it.svg?branch=master)](https://travis-ci.com/jcs090218/define-it)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![MELPA](https://melpa.org/packages/define-it-badge.svg)](https://melpa.org/#/define-it)
 [![MELPA Stable](https://stable.melpa.org/packages/define-it-badge.svg)](https://stable.melpa.org/#/define-it)
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-
+[![CI](https://github.com/jcs-elpa/define-it/actions/workflows/test.yml/badge.svg)](https://github.com/jcs-elpa/define-it/actions/workflows/test.yml)
 
 # define-it
 > Define, translate, wiki the word.
@@ -24,12 +23,10 @@
 
 *P.S. Inspired by [Amazon Kindle](https://en.wikipedia.org/wiki/Amazon_Kindle)'s reading experiences.*
 
-
 ## Dependencies
 
 * [google-translate](https://github.com/atykhonov/google-translate)
 * [wiki-summary](https://github.com/jozefg/wiki-summary.el)
-
 
 ## Services
 
@@ -37,14 +34,12 @@
 * [Google Translate](https://translate.google.com/)
 * [Wikipedia](https://www.wikipedia.org/)
 
-
 ## Usage
 
 These are the function calls available.
 
 * `define-it`
 * `define-it-at-point`
-
 
 ## Customization
 
@@ -75,7 +70,6 @@ you should consider set these variables below like this.
 (setq google-translate-default-source-language "auto")  ; Auto detect language.
 (setq google-translate-default-target-language "en")    ; Set your target language.
 ```
-
 
 ## Contribution
 
