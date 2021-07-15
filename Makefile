@@ -3,9 +3,9 @@ SHELL := /usr/bin/env bash
 EMACS ?= emacs
 CASK ?= cask
 
-PKG-FILES := alt-codes.el
+PKG-FILES := define-it.el
 
-TEST-FILES := $(shell ls test/alt-codes-*.el)
+TEST-FILES := $(shell ls test/define-it-*.el)
 
 .PHONY: clean checkdoc lint unix-build unix-compile	unix-test
 
