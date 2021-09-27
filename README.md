@@ -1,10 +1,11 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![MELPA](https://melpa.org/packages/define-it-badge.svg)](https://melpa.org/#/define-it)
 [![MELPA Stable](https://stable.melpa.org/packages/define-it-badge.svg)](https://stable.melpa.org/#/define-it)
-[![CI](https://github.com/jcs-elpa/define-it/actions/workflows/test.yml/badge.svg)](https://github.com/jcs-elpa/define-it/actions/workflows/test.yml)
 
 # define-it
 > Define, translate, wiki the word.
+
+[![CI](https://github.com/jcs-elpa/define-it/actions/workflows/test.yml/badge.svg)](https://github.com/jcs-elpa/define-it/actions/workflows/test.yml)
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 **Table of Contents**
