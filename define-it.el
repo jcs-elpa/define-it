@@ -67,6 +67,11 @@
   :type 'boolean
   :group 'define-it)
 
+(defcustom define-it-text-scale-level 0
+  "Text scale level for posframe."
+  :type 'integer
+  :group 'define-it)
+
 (defcustom define-it-define-word-header "DEFINE\n\n"
   "Header for current defining word."
   :type 'string
@@ -114,7 +119,7 @@
 (defvar define-it-pop-tip-color 'define-it-pop-tip-color)
 
 (defface define-it-headline-face
-  '((t (:foreground "gold4" :bold t :height 200)))
+  '((t (:foreground "gold4" :bold t :height 150)))
   "Face for headline."
   :group 'define-it)
 (defvar define-it-headline-face 'define-it-headline-face)
@@ -555,10 +560,9 @@ CASE are flag for `case-fold-search'."
       (define-it--return-info-by-start-index define-it--get-def-index)
       (define-it--return-info-by-start-index define-it--get-def-index)))))
 
-(defun define-it--post ()
-  ""
-  (add-hook 'post-command-hook #'define-it--post-next)
-  (remove-hook 'post-command-hook #'define-it--post))
+(defun define-it--posframe-hide ()
+  "Hide posframe."
+  (posframe-hide define-it--posframe-buffer-name))
 
 (cl-defun define-it--in-pop (content &key point)
   "Define in the pop with CONTENT.
@@ -567,15 +571,18 @@ The location POINT.  TIMEOUT for not forever delay."
       (progn
         (cl-case define-it-output-choice
           (`frame
+           (with-current-buffer (get-buffer-create define-it--posframe-buffer-name)
+             (let ((text-scale-mode-step 1.1))
+               (text-scale-set define-it-text-scale-level)))
            (posframe-show define-it--posframe-buffer-name :string content
                           :background-color (face-background define-it-pop-tip-color)
-                          :foreground-color (face-foreground define-it-pop-tip-color)
+                          :internal-border-width 5
                           :timeout define-it-timeout))
           (`pop
            (pos-tip-show
             (pos-tip-fill-string content (frame-width))
             define-it-pop-tip-color point nil define-it-timeout)))
-        (add-hook 'post-command-hook #'define-it--post)
+        (add-hook 'post-command-hook #'define-it--posframe-hide)
         (define-it--kill-timer))
     (popup-tip content :point point :around t :scroll-bar t :margin t)))
 
