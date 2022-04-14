@@ -7,7 +7,7 @@
 ;; Description: Define the word.
 ;; Keyword: dictionary explanation search wiki
 ;; Version: 0.2.4
-;; Package-Requires: ((emacs "25.1") (s "1.12.0") (request "0.3.0") (popup "0.5.3") (pos-tip "0.4.6") (google-translate "0.11.18") (wiki-summary "0.1"))
+;; Package-Requires: ((emacs "25.1") (s "1.12.0") (request "0.3.0") (popup "0.5.3") (pos-tip "0.4.6") (posframe "1.1.7") (google-translate "0.11.18") (wiki-summary "0.1"))
 ;; URL: https://github.com/jcs-elpa/define-it
 
 ;; This file is NOT part of GNU Emacs.
@@ -40,6 +40,7 @@
 (require 'request)
 (require 'pos-tip)
 (require 'popup)
+(require 'posframe)
 
 (require 'google-translate)
 (require 'wiki-summary)
@@ -56,8 +57,9 @@
 
 (defcustom define-it-output-choice 'view
   "Option to show output."
-  :type '(choice (const :tag "view" view)
-                 (const :tag "pop" pop))
+  :type '(choice (const :tag "view"  view)
+                 (const :tag "pop"   pop)
+                 (const :tag "frame" frame))
   :group 'define-it)
 
 (defcustom define-it-show-header t
@@ -139,6 +141,9 @@
   "Timer for defining.")
 (defvar define-it--update-time 0.1
   "Run every this seconds until all information is received.")
+
+(defconst define-it--posframe-buffer-name "*define-it: tooltip*"
+  "Name of the posframe buffer hold.")
 
 (defconst define-it--buffer-name-format "*define-it: %s*"
   "Format for buffer name.")
@@ -265,15 +270,15 @@ CASE are flag for `case-fold-search'."
 (defun define-it--fix-gap-between-same-sections (str)
   "Fixed the same sections' gap lines by STR."
   (define-it--through-buffer-by-blank-line
-    (lambda (_line)
-      (let (last-line-str next-line-str)
-        (save-excursion
-          (forward-line -1)
-          (setq last-line-str (define-it--line-match-p str)))
-        (save-excursion
-          (forward-line 1)
-          (setq next-line-str (define-it--line-match-p str)))
-        (when (and next-line-str last-line-str) (define-it--delete-line 1))))))
+   (lambda (_line)
+     (let (last-line-str next-line-str)
+       (save-excursion
+         (forward-line -1)
+         (setq last-line-str (define-it--line-match-p str)))
+       (save-excursion
+         (forward-line 1)
+         (setq next-line-str (define-it--line-match-p str)))
+       (when (and next-line-str last-line-str) (define-it--delete-line 1))))))
 
 (defun define-it--parse-dictionary (data)
   "Parse dictionary HTML from DATA."
@@ -333,22 +338,22 @@ CASE are flag for `case-fold-search'."
 
        ;; Pretty syntax
        (define-it--buffer-replace
-         (lambda (current-content)
-           (setq current-content (s-replace "]  " "]  \n\n" current-content)
-                 current-content (s-replace-regexp "[ ]+" " " current-content)
-                 current-content (s-replace-regexp "[ ]+[.]" "." current-content)
-                 current-content (s-replace-regexp "[ \n]*,[ \n]*" ", " current-content)
-                 current-content (s-replace-regexp "Synonyms:[ ]*\n " "Synonyms: " current-content)
-                 current-content (s-replace-regexp "[ ]*Synonyms:[ ]*" "Synonyms: " current-content)
-                 current-content (s-replace-regexp "Synonyms: " "  Synonyms: " current-content)
-                 current-content (s-replace-regexp "Synonyms: " "\n\n  Synonyms: " current-content)
-                 current-content (s-replace-regexp "[ \n]*[[] " " [ " current-content)
-                 current-content (s-replace-regexp "[ \n]+)" " )" current-content)
-                 current-content (s-replace-regexp "  " " " current-content)
-                 current-content (s-replace " " "" current-content))
-           ;; Cleaned last trailing empty lines with `string-trim'.
-           (setq current-content (s-replace-regexp "\\(^\\s-*$\\)\n" "\n" (string-trim current-content)))
-           current-content))
+        (lambda (current-content)
+          (setq current-content (s-replace "]  " "]  \n\n" current-content)
+                current-content (s-replace-regexp "[ ]+" " " current-content)
+                current-content (s-replace-regexp "[ ]+[.]" "." current-content)
+                current-content (s-replace-regexp "[ \n]*,[ \n]*" ", " current-content)
+                current-content (s-replace-regexp "Synonyms:[ ]*\n " "Synonyms: " current-content)
+                current-content (s-replace-regexp "[ ]*Synonyms:[ ]*" "Synonyms: " current-content)
+                current-content (s-replace-regexp "Synonyms: " "  Synonyms: " current-content)
+                current-content (s-replace-regexp "Synonyms: " "\n\n  Synonyms: " current-content)
+                current-content (s-replace-regexp "[ \n]*[[] " " [ " current-content)
+                current-content (s-replace-regexp "[ \n]+)" " )" current-content)
+                current-content (s-replace-regexp "  " " " current-content)
+                current-content (s-replace " " "" current-content))
+          ;; Cleaned last trailing empty lines with `string-trim'.
+          (setq current-content (s-replace-regexp "\\(^\\s-*$\\)\n" "\n" (string-trim current-content)))
+          current-content))
        ;; Fixed missing headline
        (goto-char (point-min))
        (while (define-it--re-search-forward "^[0-9]+[.]+[ ]*")
@@ -364,46 +369,46 @@ CASE are flag for `case-fold-search'."
        ;; Add Example
        (let ((blank-line-count 0))
          (define-it--through-buffer-by-line
-           (lambda (line)
-             (if (or (string-match-p "[0-9]+[.] " line) (string-match-p "[:]" line))
-                 (setq blank-line-count 0)
-               (let ((blank-ln (define-it--current-line-empty-p)))
-                 ;; Found example.
-                 (when (and (= blank-line-count 2) (not blank-ln))
-                   (move-to-column 0) (insert " Example: "))
-                 (when blank-ln (setq blank-line-count (1+ blank-line-count))))))))
+          (lambda (line)
+            (if (or (string-match-p "[0-9]+[.] " line) (string-match-p "[:]" line))
+                (setq blank-line-count 0)
+              (let ((blank-ln (define-it--current-line-empty-p)))
+                ;; Found example.
+                (when (and (= blank-line-count 2) (not blank-ln))
+                  (move-to-column 0) (insert " Example: "))
+                (when blank-ln (setq blank-line-count (1+ blank-line-count))))))))
        ;; Post process
        (define-it--buffer-replace
-         (lambda (current-content)
-           (setq current-content (s-replace "  " " " current-content)
-                 current-content (s-replace "[^ ]\n[^ ]" " " current-content)
-                 current-content (s-replace-regexp "[.][^\n][\n]*See" ". See" current-content)
-                 current-content (s-replace-regexp "\\(^\\s-*$\\)\n" "\n" current-content))
-           current-content))
+        (lambda (current-content)
+          (setq current-content (s-replace "  " " " current-content)
+                current-content (s-replace "[^ ]\n[^ ]" " " current-content)
+                current-content (s-replace-regexp "[.][^\n][\n]*See" ". See" current-content)
+                current-content (s-replace-regexp "\\(^\\s-*$\\)\n" "\n" current-content))
+          current-content))
        ;; Fix Synonyms and Example gap.
        (define-it--fix-gap-between-same-sections "Synonyms:")
        (define-it--fix-gap-between-same-sections "Example:")
        ;; Fix definition
        (let ((blank-line-count 0))
          (define-it--through-buffer-by-line
-           (lambda (line)
-             (if (or (string-match-p "[0-9]+[.] " line) (string-match-p "[:]" line))
-                 (setq blank-line-count 0)
-               (let ((blank-ln (define-it--current-line-empty-p)))
-                 ;; Found definition.
-                 (when (and (= blank-line-count 1) (not blank-ln))
-                   (let ((st-pt -1) (end-pt -1) (old-content "") (new-content ""))
-                     (setq st-pt (line-beginning-position))
-                     (save-excursion
-                       (define-it--next-blank-line)
-                       (forward-line -1)
-                       (setq end-pt (line-end-position)))
-                     (setq old-content (buffer-substring st-pt end-pt))
-                     (delete-region st-pt end-pt)
-                     (setq new-content (s-replace "\n" " " old-content)
-                           new-content (s-replace "  " " " new-content))
-                     (insert new-content)))
-                 (when blank-ln (setq blank-line-count (1+ blank-line-count))))))))
+          (lambda (line)
+            (if (or (string-match-p "[0-9]+[.] " line) (string-match-p "[:]" line))
+                (setq blank-line-count 0)
+              (let ((blank-ln (define-it--current-line-empty-p)))
+                ;; Found definition.
+                (when (and (= blank-line-count 1) (not blank-ln))
+                  (let ((st-pt -1) (end-pt -1) (old-content "") (new-content ""))
+                    (setq st-pt (line-beginning-position))
+                    (save-excursion
+                      (define-it--next-blank-line)
+                      (forward-line -1)
+                      (setq end-pt (line-end-position)))
+                    (setq old-content (buffer-substring st-pt end-pt))
+                    (delete-region st-pt end-pt)
+                    (setq new-content (s-replace "\n" " " old-content)
+                          new-content (s-replace "  " " " new-content))
+                    (insert new-content)))
+                (when blank-ln (setq blank-line-count (1+ blank-line-count))))))))
        ;; Fixed missing line break
        (goto-char (point-min))
        (while (define-it--re-search-forward "[A-Z][a-z]")
@@ -415,20 +420,20 @@ CASE are flag for `case-fold-search'."
                (insert "\n * ")))))
 
        (define-it--through-buffer-by-line
-         (lambda (_line)
-           (let (last-line-char next-char)
-             (save-excursion
-               (forward-line -1)
-               (move-to-column (1- (line-end-position)))
-               (setq last-line-char (char-before)))
-             (save-excursion
-               (move-to-column 1)
-               (setq next-char (char-before)))
-             (when (and last-line-char next-char
-                        (not (string-match-p "[ \n]" (string last-line-char)))
-                        (not (string-match-p "[ \n]" (string next-char))))
-               (ignore-errors (delete-char -1))
-               (insert " ")))))
+        (lambda (_line)
+          (let (last-line-char next-char)
+            (save-excursion
+              (forward-line -1)
+              (move-to-column (1- (line-end-position)))
+              (setq last-line-char (char-before)))
+            (save-excursion
+              (move-to-column 1)
+              (setq next-char (char-before)))
+            (when (and last-line-char next-char
+                       (not (string-match-p "[ \n]" (string last-line-char)))
+                       (not (string-match-p "[ \n]" (string next-char))))
+              (ignore-errors (delete-char -1))
+              (insert " ")))))
 
        ;; Propertize text.
        (define-it--put-text-property-by-string "Word forms:" define-it-var-face)
@@ -550,14 +555,27 @@ CASE are flag for `case-fold-search'."
       (define-it--return-info-by-start-index define-it--get-def-index)
       (define-it--return-info-by-start-index define-it--get-def-index)))))
 
+(defun define-it--post ()
+  ""
+  (add-hook 'post-command-hook #'define-it--post-next)
+  (remove-hook 'post-command-hook #'define-it--post))
+
 (cl-defun define-it--in-pop (content &key point)
   "Define in the pop with CONTENT.
 The location POINT.  TIMEOUT for not forever delay."
   (if (display-graphic-p)
       (progn
-        (pos-tip-show
-         (pos-tip-fill-string content (frame-width))
-         define-it-pop-tip-color point nil define-it-timeout)
+        (cl-case define-it-output-choice
+          (`frame
+           (posframe-show define-it--posframe-buffer-name :string content
+                          :background-color (face-background define-it-pop-tip-color)
+                          :foreground-color (face-foreground define-it-pop-tip-color)
+                          :timeout define-it-timeout))
+          (`pop
+           (pos-tip-show
+            (pos-tip-fill-string content (frame-width))
+            define-it-pop-tip-color point nil define-it-timeout)))
+        (add-hook 'post-command-hook #'define-it--post)
         (define-it--kill-timer))
     (popup-tip content :point point :around t :scroll-bar t :margin t)))
 
@@ -590,7 +608,7 @@ The location POINT.  TIMEOUT for not forever delay."
   (if (define-it--received-info-p)
       (let* ((content (define-it--get-definition)))
         (cl-case define-it-output-choice
-          ('pop (define-it--in-pop content :point (point)))
+          ((or pop frame) (define-it--in-pop content :point (point)))
           (t (define-it--in-buffer content))))
     (define-it--reset-timer)))
 
