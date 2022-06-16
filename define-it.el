@@ -4,11 +4,10 @@
 ;; Created date 2019-10-24 11:18:00
 
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
-;; Description: Define the word.
-;; Keyword: dictionary explanation search wiki
+;; URL: https://github.com/jcs-elpa/define-it
 ;; Version: 0.2.4
 ;; Package-Requires: ((emacs "25.1") (s "1.12.0") (request "0.3.0") (popup "0.5.3") (pos-tip "0.4.6") (posframe "1.1.7") (google-translate "0.11.18") (wiki-summary "0.1"))
-;; URL: https://github.com/jcs-elpa/define-it
+;; Keywords: dictionary explanation search wiki
 
 ;; This file is NOT part of GNU Emacs.
 

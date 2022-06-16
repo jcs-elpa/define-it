@@ -2,6 +2,9 @@
          "0.2.4"
          "Define, translate, wiki the word")
 
+(website-url "https://github.com/jcs-elpa/define-it")
+(keywords "dictionary" "explanation" "search" "wiki")
+
 (package-file "define-it.el")
 
 (source "melpa")
