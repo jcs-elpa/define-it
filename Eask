@@ -3,7 +3,7 @@
          "Define, translate, wiki the word")
 
 (website-url "https://github.com/jcs-elpa/define-it")
-(keywords "dictionary" "explanation" "search" "wiki")
+(keywords "convenience" "dictionary" "explanation" "search" "wiki")
 
 (package-file "define-it.el")
 
