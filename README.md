@@ -54,7 +54,7 @@ You can customize these variables below for controlling the displayed on the men
 
 ### About Output
 
-There are two way of outputing the menu. `pop` will output it in tooltip. `view`
+There are two ways of outputing the menu. `pop` will output it in tooltip. `view`
 will output it in the another buffer.
 
 ```el
@@ -64,7 +64,7 @@ will output it in the another buffer.
 
 ### About Google Translate
 
-If you wouldn't want to select the `source` and `destination` every time,
+If you don't want to select the `source` and `destination` every time,
 you should consider set these variables below like this.
 
 ```el
