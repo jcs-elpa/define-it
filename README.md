@@ -11,10 +11,10 @@
 **Table of Contents**
 
 - [define-it](#define-it)
-    - [Dependencies](#dependencies)
-    - [Services](#services)
-    - [Usage](#usage)
-    - [Customization](#customization)
+    - [📌 Dependencies](#📌-dependencies)
+    - [🛎️ Services](#🛎️-services)
+    - [🔨 Usage](#🔨-usage)
+    - [🔧 Customization](#🔧-customization)
         - [Showing/Displaying](#showingdisplaying)
         - [Output](#output)
         - [Google Translate](#google-translate)
@@ -24,25 +24,25 @@
 
 *P.S. Inspired by [Amazon Kindle](https://en.wikipedia.org/wiki/Amazon_Kindle)'s reading experiences.*
 
-## Dependencies
+## 📌 Dependencies
 
 * [define-word](https://github.com/abo-abo/define-word)
 * [google-translate](https://github.com/atykhonov/google-translate)
 * [wiki-summary](https://github.com/jozefg/wiki-summary.el)
 
-## Services
+## 🛎️ Services
 
 * [Google Translate](https://translate.google.com/)
 * [Wikipedia](https://www.wikipedia.org/)
 
-## Usage
+## 🔨 Usage
 
 These are the function calls available.
 
 * `define-it`
 * `define-it-at-point`
 
-## Customization
+## 🔧 Customization
 
 ### Showing/Displaying
 
