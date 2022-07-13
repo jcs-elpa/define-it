@@ -14,11 +14,11 @@
     - [Dependencies](#dependencies)
     - [Services](#services)
     - [Usage](#usage)
-        - [About Showing/Displaying](#about-showingdisplaying)
-        - [About Output](#about-output)
-        - [About Delimiter](#about-delimiter)
-        - [About Google Translate](#about-google-translate)
-    - [Contribution](#contribution)
+    - [Customization](#customization)
+        - [Showing/Displaying](#showingdisplaying)
+        - [Output](#output)
+        - [Google Translate](#google-translate)
+    - [Contribute](#contribute)
 
 <!-- markdown-toc end -->
 
@@ -44,7 +44,7 @@ These are the function calls available.
 
 ## Customization
 
-### About Showing/Displaying
+### Showing/Displaying
 
 You can customize these variables below for controlling the displayed on the menu.
 
@@ -52,7 +52,7 @@ You can customize these variables below for controlling the displayed on the men
 * `define-it-show-google-translate`
 * `define-it-show-wiki-summary`
 
-### About Output
+### Output
 
 There are two ways of outputing the menu. `pop` will output it in tooltip. `view`
 will output it in the another buffer.
@@ -62,7 +62,7 @@ will output it in the another buffer.
 (setq define-it-output-choice 'pop)   ; Output with tooltip.
 ```
 
-### About Google Translate
+### Google Translate
 
 If you don't want to select the `source` and `destination` every time,
 you should consider set these variables below like this.
