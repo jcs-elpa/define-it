@@ -26,12 +26,12 @@
 
 ## Dependencies
 
+* [define-word](https://github.com/abo-abo/define-word)
 * [google-translate](https://github.com/atykhonov/google-translate)
 * [wiki-summary](https://github.com/jozefg/wiki-summary.el)
 
 ## Services
 
-* [Collins Dictionary](https://www.collinsdictionary.com/)
 * [Google Translate](https://translate.google.com/)
 * [Wikipedia](https://www.wikipedia.org/)
 
