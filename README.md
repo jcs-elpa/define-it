@@ -11,14 +11,16 @@
 **Table of Contents**
 
 - [define-it](#define-it)
-    - [📌 Dependencies](#📌-dependencies)
-    - [🛎️ Services](#🛎️-services)
-    - [🔨 Usage](#🔨-usage)
-    - [🔧 Customization](#🔧-customization)
-        - [Showing/Displaying](#showingdisplaying)
-        - [Output](#output)
-        - [Google Translate](#google-translate)
-    - [Contribute](#contribute)
+  - [📌 Dependencies](#📌-dependencies)
+  - [🛎️ Services](#🛎️-services)
+  - [🔨 Usage](#🔨-usage)
+  - [🔧 Customization](#🔧-customization)
+    - [Showing/Displaying](#showingdisplaying)
+    - [Output](#output)
+    - [Google Translate](#google-translate)
+  - [🛠️ Contribute](#🛠️-contribute)
+    - [🔬 Development](#🔬-development)
+  - [⚜️ License](#⚜️-license)
 
 <!-- markdown-toc end -->
 
