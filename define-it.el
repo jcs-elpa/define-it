@@ -1,6 +1,6 @@
 ;;; define-it.el --- Define, translate, wiki the word  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2019-2024  Shen, Jen-Chieh
+;; Copyright (C) 2019-2025  Shen, Jen-Chieh
 ;; Created date 2019-10-24 11:18:00
 
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
