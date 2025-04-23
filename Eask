@@ -1,3 +1,5 @@
+;; -*- mode: eask; lexical-binding: t -*-
+
 (package "define-it"
          "0.2.5"
          "Define, translate, wiki the word")
