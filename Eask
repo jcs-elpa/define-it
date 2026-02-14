@@ -11,12 +11,14 @@
 
 (script "test" "echo \"Error: no test specified\" && exit 1")
 
-(source "melpa")
+(source 'gnu)
+(source 'melpa)
 
 (depends-on "emacs" "25.1")
 (depends-on "s")
 (depends-on "popup")
 (depends-on "pos-tip")
+(depends-on "posframe")
 (depends-on "define-word")
 (depends-on "google-translate")
 (depends-on "wiki-summary")
